@@ -1,3 +1,4 @@
+using MergeSharpWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MergeSharpWebAPI.Controllers
