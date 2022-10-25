@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\lance\\OneDrive\\Documents\\ECE496\\CAPSTONE\\MergeSharpWebAPI\\MergeSharpWebAPI.csproj": {}
+    "C:\\Users\\Joseph\\repos\\focall\\MergeSharpWebAPI\\MergeSharpWebAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\lance\\OneDrive\\Documents\\ECE496\\CAPSTONE\\MergeSharpWebAPI\\MergeSharpWebAPI.csproj": {
+    "C:\\Users\\Joseph\\repos\\focall\\MergeSharpWebAPI\\MergeSharpWebAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\lance\\OneDrive\\Documents\\ECE496\\CAPSTONE\\MergeSharpWebAPI\\MergeSharpWebAPI.csproj",
+        "projectUniqueName": "C:\\Users\\Joseph\\repos\\focall\\MergeSharpWebAPI\\MergeSharpWebAPI.csproj",
         "projectName": "MergeSharpWebAPI",
-        "projectPath": "C:\\Users\\lance\\OneDrive\\Documents\\ECE496\\CAPSTONE\\MergeSharpWebAPI\\MergeSharpWebAPI.csproj",
-        "packagesPath": "C:\\Users\\lance\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\lance\\OneDrive\\Documents\\ECE496\\CAPSTONE\\MergeSharpWebAPI\\obj\\",
+        "projectPath": "C:\\Users\\Joseph\\repos\\focall\\MergeSharpWebAPI\\MergeSharpWebAPI.csproj",
+        "packagesPath": "C:\\Users\\Joseph\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Joseph\\repos\\focall\\MergeSharpWebAPI\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\lance\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\Joseph\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
