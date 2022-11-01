@@ -1,10 +1,9 @@
 using System.Threading.Tasks;
-using Chatty.Api.Models;
+using MergeSharpWebAPI.Models;
 
-namespace Chatty.Api.Hubs.Clients
+namespace MergeSharpWebAPI.Hubs.Clients;
+
+public interface IChatClient
 {
-    public interface IChatClient
-    {
-        Task ReceiveMessage(ChatMessage message);
-    }
+    Task ReceiveMessage(ChatMessage message);
 }

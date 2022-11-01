@@ -1,9 +1,13 @@
-namespace Chatty.Api.Models
-{
-    public class ChatMessage
-    {
-        public string User { get; set; }
+namespace MergeSharpWebAPI.Models;
 
-        public string Message { get; set; }
+public class ChatMessage
+{
+    public ChatMessage(string user, string message)
+    {
+        this.User = user;
+        this.Message = message;
     }
+    public string User { get; set; }
+
+    public string Message { get; set; }
 }
