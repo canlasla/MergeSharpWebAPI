@@ -41,6 +41,7 @@ app.UseCors(MyAllowSpecificOrigins);
 app.UseRouting();
 
 app.UseAuthorization();
+app.UseRouting();
 
 app.MapControllers();
 app.MapGet("/", () => "Hello world!");
