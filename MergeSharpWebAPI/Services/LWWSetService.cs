@@ -1,17 +1,17 @@
 using MergeSharpWebAPI.Models;
+using Newtonsoft.Json;
 
 namespace MergeSharpWebAPI.Services;
 
 public class LWWSetService<T>
 {
-    static List<LWWSet<T>> LWWSets { get; }
-    static int nextId = 3;
+    private static List<LWWSet<T>> LWWSets { get; }
+    private static int nextId = 3;
     static LWWSetService()
     {
         LWWSets = new List<LWWSet<T>>
         {
-            new LWWSet<T> { Id = 1 },
-            new LWWSet<T> { Id = 2 }
+            new MergeSharpWebAPI.Models.LWWSet<T> { Id = 1, LwwSet=new MergeSharp.LWWSet<T>() },
         };
     }
 
@@ -27,7 +27,7 @@ public class LWWSetService<T>
 
     public static void Delete(int id)
     {
-        var lwwSet = Get(id);
+        LWWSet<T> lwwSet = Get(id);
         if (lwwSet is null)
             return;
 
@@ -41,5 +41,14 @@ public class LWWSetService<T>
             return;
 
         LWWSets[index] = lwwSet;
+    }
+
+    public static void AddElement(int Id, T element)
+    {
+        var index = LWWSets.FindIndex(p => p.Id == Id);
+        if (index == -1)
+            return;
+
+        LWWSets[index].LwwSet.Add(element);
     }
 }
