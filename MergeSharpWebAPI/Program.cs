@@ -13,11 +13,18 @@ builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// builder.Services.AddCors(options => options.AddPolicy(name: MyAllowSpecificOrigins,
+//                       policy => _ = policy.AllowAnyHeader()
+//                                 .AllowAnyMethod()
+//                                 .AllowAnyOrigin()
+//                                 ));
+
 builder.Services.AddCors(options => options.AddPolicy(name: MyAllowSpecificOrigins,
                       policy => _ = policy.AllowAnyHeader()
                                 .AllowAnyMethod()
                                 .WithOrigins("http://localhost:3000")
-                                .AllowCredentials()));
+                                .AllowCredentials()
+                                ));
 
 var app = builder.Build();
 
@@ -35,7 +42,6 @@ app.UseCors(MyAllowSpecificOrigins);
 app.UseRouting();
 
 app.UseAuthorization();
-app.UseRouting();
 
 app.MapControllers();
 app.MapGet("/", () => "Hello world!");
