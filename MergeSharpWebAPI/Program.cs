@@ -13,16 +13,11 @@ builder.Services.AddSignalR();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// builder.Services.AddCors(options => options.AddPolicy(name: MyAllowSpecificOrigins,
-//                       policy => _ = policy.AllowAnyHeader()
-//                                 .AllowAnyMethod()
-//                                 .AllowAnyOrigin()
-//                                 ));
-
 builder.Services.AddCors(options => options.AddPolicy(name: MyAllowSpecificOrigins,
                       policy => _ = policy.AllowAnyHeader()
                                 .AllowAnyMethod()
-                                .WithOrigins("http://localhost:3000")
+                                // .WithOrigins("http://localhost:3000", "https://localhost:7010", "http://localhost:5010")
+                                .SetIsOriginAllowed((host) => true)
                                 .AllowCredentials()
                                 ));
 
