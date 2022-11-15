@@ -53,7 +53,8 @@ internal class Program
         serverThread.Start();
 
         // Create a connection to the server
-        const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
+        // const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
+        const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
         HubConnection connection = new HubConnectionBuilder()
                         .WithUrl(propogationMessageServer)
                         .WithAutomaticReconnect()
