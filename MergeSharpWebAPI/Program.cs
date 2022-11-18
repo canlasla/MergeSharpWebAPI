@@ -43,6 +43,7 @@ internal class Program
         _ = app.MapControllers();
         _ = app.MapGet("/", () => "Hello world!");
         _ = app.MapHub<ChatHub>("/hubs/chat");
+        _ = app.MapHub<FrontEndHub>("/hubs/frontendmessage");
 
         app.Run();
     }

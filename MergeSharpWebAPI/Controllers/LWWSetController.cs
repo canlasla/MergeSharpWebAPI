@@ -3,6 +3,8 @@ using MergeSharpWebAPI.Models;
 using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.SignalR;
+using MergeSharpWebAPI.Hubs;
 
 namespace MergeSharpWebAPI.Controllers;
 
@@ -10,8 +12,10 @@ namespace MergeSharpWebAPI.Controllers;
 [Route("[controller]")]
 public class LWWSetController : ControllerBase
 {
-    public LWWSetController()
+    private readonly IHubContext<FrontEndHub> _hubContext;
+    public LWWSetController(IHubContext<FrontEndHub> hubContext)
     {
+        _hubContext = hubContext;
     }
 
     // Get all LWW Sets
@@ -106,6 +110,7 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         LWWSetService<int>.AddElement(id, newElement);
+        _hubContext.Clients.All.SendAsync("ReceiveMessage", "This is test message");
 
         return NoContent();
     }
