@@ -7,8 +7,8 @@ namespace MergeSharpWebAPI.Hubs;
 
 public class ChatHub : Hub<IChatClient>
 {
-    public async Task SendMessage(ChatMessage message)
+    public async Task SendMessage(MergeSharpWebAPI.Models.LWWSet<int> lwwSet)
     {
-        await this.Clients.All.ReceiveMessage(message);
+        await this.Clients.All.ReceiveMessage(lwwSet);
     }
 }

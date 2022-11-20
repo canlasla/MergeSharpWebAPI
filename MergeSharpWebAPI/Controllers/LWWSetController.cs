@@ -1,8 +1,11 @@
 using MergeSharp;
 using MergeSharpWebAPI.Models;
 using MergeSharpWebAPI.Services;
+//using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using static MergeSharpWebAPI.Globals;
+
 
 namespace MergeSharpWebAPI.Controllers;
 
@@ -16,13 +19,13 @@ public class LWWSetController : ControllerBase
 
     // Get all LWW Sets
     [HttpGet("GetAllLWWSets")]
-    public ActionResult<string> GetAll() => JsonConvert.SerializeObject(LWWSetService<int>.GetAll());
+    public ActionResult<string> GetAll() => JsonConvert.SerializeObject(myLWWSetService.GetAll());
 
     // Get LWW Set by id
     [HttpGet("GetLWWSet/{id}")]
     public ActionResult<string> Get(int id)
     {
-        var lwwSet = LWWSetService<int>.Get(id);
+        var lwwSet = myLWWSetService.Get(id);
 
         if (lwwSet == null)
             return NotFound();
@@ -36,7 +39,7 @@ public class LWWSetController : ControllerBase
     //post -h Content-Type=application/json -c "{"Id":<new id>, "LwwSet":[x, y, z]}"
     public IActionResult Create(MergeSharpWebAPI.Models.LWWSet<int> lwwSet)
     {
-        LWWSetService<int>.Add(lwwSet);
+        myLWWSetService.Add(lwwSet);
         return CreatedAtAction(nameof(Create), new { id = lwwSet.Id }, lwwSet);
     }
 
@@ -48,11 +51,11 @@ public class LWWSetController : ControllerBase
         if (id != lwwSet.Id)
             return BadRequest();
 
-        var existingLWWSet = LWWSetService<int>.Get(id);
+        var existingLWWSet = myLWWSetService.Get(id);
         if (existingLWWSet is null)
             return NotFound();
 
-        LWWSetService<int>.Update(lwwSet);
+        myLWWSetService.Update(lwwSet);
 
         return NoContent();
     }
@@ -61,12 +64,12 @@ public class LWWSetController : ControllerBase
     [HttpDelete("DeleteLWWSet/{id}")]
     public IActionResult Delete(int id)
     {
-        var lwwSet = LWWSetService<int>.Get(id);
+        var lwwSet = myLWWSetService.Get(id);
 
         if (lwwSet is null)
             return NotFound();
 
-        LWWSetService<int>.Delete(id);
+        myLWWSetService.Delete(id);
 
         return NoContent();
     }
@@ -75,24 +78,24 @@ public class LWWSetController : ControllerBase
     [HttpGet("CountLWWSet/{id}")]
     public ActionResult<string> CountLWWSet(int id)
     {
-        var lwwSet = LWWSetService<int>.Get(id);
+        var lwwSet = myLWWSetService.Get(id);
 
         if (lwwSet == null)
             return NotFound();
 
-        return JsonConvert.SerializeObject(LWWSetService<int>.CountLWWSet(id));
+        return JsonConvert.SerializeObject(myLWWSetService.CountLWWSet(id));
     }
 
     //Check if LWW Set contains element
     [HttpGet("Contains/{id}/{element}")]
     public ActionResult<string> Contains(int id, int element)
     {
-        var lwwSet = LWWSetService<int>.Get(id);
+        var lwwSet = myLWWSetService.Get(id);
 
         if (lwwSet == null)
             return NotFound();
 
-        return JsonConvert.SerializeObject(LWWSetService<int>.LWWSetContains(id, element));
+        return JsonConvert.SerializeObject(myLWWSetService.LWWSetContains(id, element));
     }
 
 
@@ -101,11 +104,11 @@ public class LWWSetController : ControllerBase
     [HttpPut("AddElement/{id}")]
     public IActionResult AddElement(int id, [FromBody]int newElement)
     {
-        var existingLWWSet = LWWSetService<int>.Get(id);
+        var existingLWWSet = myLWWSetService.Get(id);
         if (existingLWWSet is null)
             return NotFound();
 
-        LWWSetService<int>.AddElement(id, newElement);
+        myLWWSetService.AddElement(id, newElement);
 
         return NoContent();
     }
@@ -113,11 +116,11 @@ public class LWWSetController : ControllerBase
     [HttpPut("RemoveElement/{id}")]
     public IActionResult RemoveElement(int id, [FromBody] int element)
     {
-        var existingLWWSet = LWWSetService<int>.Get(id);
+        var existingLWWSet = myLWWSetService.Get(id);
         if (existingLWWSet is null)
             return NotFound();
 
-        if(!LWWSetService<int>.RemoveElement(id, element))
+        if(!myLWWSetService.RemoveElement(id, element))
             return NotFound();
 
         return NoContent();
@@ -127,11 +130,11 @@ public class LWWSetController : ControllerBase
     [HttpDelete("ClearLWWSet/{id}")]
     public IActionResult ClearLWWSet(int id)
     {
-        var existingLWWSet = LWWSetService<int>.Get(id);
+        var existingLWWSet = myLWWSetService.Get(id);
         if (existingLWWSet is null)
             return NotFound();
 
-        LWWSetService<int>.ClearLWWSet(id);
+        myLWWSetService.ClearLWWSet(id);
 
         return NoContent();
     }
@@ -141,15 +144,15 @@ public class LWWSetController : ControllerBase
     [HttpPut("Merge/{id1}")]
     public IActionResult Merge(int id1, [FromBody]int id2)
     {
-        var existingLWWSet1 = LWWSetService<int>.Get(id1);
-        var existingLWWSet2 = LWWSetService<int>.Get(id2);
+        var existingLWWSet1 = myLWWSetService.Get(id1);
+        var existingLWWSet2 = myLWWSetService.Get(id2);
 
         if (existingLWWSet1 is null)
             return NotFound();
         else if (existingLWWSet2 is null)
             return NotFound();
 
-        LWWSetService<int>.MergeLWWSets(id1, id2);
+        myLWWSetService.MergeLWWSets(id1, id2);
 
         return NoContent();
     }

@@ -1,5 +1,7 @@
 using MergeSharpWebAPI.Hubs;
+using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.SignalR.Client;
+using static MergeSharpWebAPI.Globals;
 
 internal class Program
 {
@@ -55,7 +57,7 @@ internal class Program
         // Create a connection to the server
         // const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
         const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
-        HubConnection connection = new HubConnectionBuilder()
+        connection = new HubConnectionBuilder()
                         .WithUrl(propogationMessageServer)
                         .WithAutomaticReconnect()
                         .Build();
@@ -81,8 +83,17 @@ internal class Program
         {
             MergeSharp.LWWSetMsg<int> lwwMsg = new();
             lwwMsg.Decode(byteMsg);
+
             Console.WriteLine("lwwMsg.addSet:");
             Console.WriteLine(string.Join(",", lwwMsg.addSet.Keys.ToList()));
+
+            //transfer data between threads
+            // merge the data to the correct thread
+            myLWWSetService.MergeLWWSets(1, lwwMsg);
+
+            //sean is doin this
+            //raise receivemessage on javascript frontend
+            // the javscsript front end is subscribed to this 
         });
 
         // Start the connection
@@ -99,11 +110,15 @@ internal class Program
         // Test sending a message to the server
         try
         {
-            MergeSharp.LWWSet<int> set1 = new();
-            set1.Add(5);
-            set1.Add(6);
+            //MergeSharp.LWWSet<int> set1 = new();
+            //set1.Add(5);
+            //set1.Add(6);
 
-            byte[] byteMsg = set1.GetLastSynchronizedUpdate().Encode();
+            //myLWWSetService.AddElement(1, 69);
+
+            //figure out how to get crdt data from the other thread
+
+            byte[] byteMsg = myLWWSetService.GetLastSynchronizedUpdate(1).Encode();
             await connection.InvokeAsync("SendEncodedMessage", byteMsg);
         }
         catch (Exception ex)

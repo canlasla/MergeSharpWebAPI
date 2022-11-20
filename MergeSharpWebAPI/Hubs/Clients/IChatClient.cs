@@ -5,5 +5,5 @@ namespace MergeSharpWebAPI.Hubs.Clients;
 
 public interface IChatClient
 {
-    Task ReceiveMessage(ChatMessage message);
+    Task ReceiveMessage(MergeSharpWebAPI.Models.LWWSet<int> lwwSet);
 }
