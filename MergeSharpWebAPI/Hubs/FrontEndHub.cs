@@ -5,10 +5,34 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace MergeSharpWebAPI.Hubs;
 
+public static class UserHandler
+{
+    public static HashSet<string> ConnectedIds = new HashSet<string>();
+}
+
 public class FrontEndHub : Hub<IFrontEndClient>
 {
+    public override Task OnConnectedAsync()
+    {
+        UserHandler.ConnectedIds.Add(Context.ConnectionId);
+        return base.OnConnectedAsync();
+    }
+
+    public override Task OnDisconnectedAsync(Exception exception)
+    {
+        UserHandler.ConnectedIds.Remove(Context.ConnectionId);
+        return base.OnDisconnectedAsync(exception);
+    }
+
     public async Task SendMessage(FrontEndMessage message)
     {
         await this.Clients.All.ReceiveMessage(message);
+    }
+
+    public async Task SendMessageTest(string message)
+    {
+        Console.WriteLine("in SendMessageTest");
+        Console.WriteLine(message);
+        await this.Clients.All.ReceiveMessageTest(message);
     }
 }

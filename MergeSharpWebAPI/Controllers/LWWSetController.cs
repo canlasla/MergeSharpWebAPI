@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using static MergeSharpWebAPI.Globals;
 using MergeSharpWebAPI.Hubs;
 using MergeSharpWebAPI.Hubs.Clients;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace MergeSharpWebAPI.Controllers;
 
@@ -127,10 +128,11 @@ public class LWWSetController : ControllerBase
 
         myLWWSetService.AddElement(id, newElement);
 
-        Console.WriteLine(this._hubContext.Clients.All.ToString());
+        Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
 
-        await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
-
+        // await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
+        await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
     }
     // Remove an element from LWW Set

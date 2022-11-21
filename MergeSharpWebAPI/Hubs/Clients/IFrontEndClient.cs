@@ -6,4 +6,5 @@ namespace MergeSharpWebAPI.Hubs.Clients;
 public interface IFrontEndClient
 {
     Task ReceiveMessage(FrontEndMessage message);
+    Task ReceiveMessageTest(string message);
 }

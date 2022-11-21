@@ -46,7 +46,6 @@ internal class Program
 
         _ = app.MapControllers();
         _ = app.MapGet("/", () => "Hello world!");
-        _ = app.MapHub<ChatHub>("/hubs/chat");
         _ = app.MapHub<FrontEndHub>("/hubs/frontendmessage");
 
         app.Run();
@@ -58,9 +57,9 @@ internal class Program
         serverThread.Start();
 
         // Create a connection to the server
-        // const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
+        const string propogationMessageServer = "https://localhost:709/test";
         //const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
-        //connection = new HubConnectionBuilder()
+        // var connection2 = new HubConnectionBuilder()
         //                .WithUrl(propogationMessageServer)
         //                .WithAutomaticReconnect()
         //                .Build();
@@ -82,7 +81,7 @@ internal class Program
                     };
 
         // Define behaviour on events from server
-        _ = connection.On<byte[]>("ReceiveEncodedMessage", byteMsg =>
+        _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
             MergeSharp.LWWSetMsg<int> lwwMsg = new();
             lwwMsg.Decode(byteMsg);
@@ -97,7 +96,21 @@ internal class Program
             //sean is doin this
             //raise receivemessage on javascript frontend
             // the javscsript front end is subscribed to this
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri("http://localhost:7009");
 
+                var content = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("1", "5")
+                });
+
+                var result = await client.PostAsync("AddElement/1", content);
+
+                string resultContent = await result.Content.ReadAsStringAsync();
+
+                Console.WriteLine(resultContent);
+            }
 
         });
 
@@ -109,26 +122,28 @@ internal class Program
         }
         catch (Exception ex)
         {
-            Console.Write(ex.Message);
+            Console.WriteLine("dkjfshkdjh");
+            Console.WriteLine(ex.Message);
+            Console.WriteLine("lllllllllllll");
         }
 
         // Test sending a message to the server
-        try
-        {
-            //MergeSharp.LWWSet<int> set1 = new();
-            //set1.Add(5);
-            //set1.Add(6);
+        // try
+        // {
+        //     //MergeSharp.LWWSet<int> set1 = new();
+        //     //set1.Add(5);
+        //     //set1.Add(6);
 
-            //myLWWSetService.AddElement(1, 69);
+        //     //myLWWSetService.AddElement(1, 69);
 
-            //figure out how to get crdt data from the other thread
+        //     //figure out how to get crdt data from the other thread
 
-            byte[] byteMsg = myLWWSetService.GetLastSynchronizedUpdate(1).Encode();
-            await connection.InvokeAsync("SendEncodedMessage", byteMsg);
-        }
-        catch (Exception ex)
-        {
-            Console.Write(ex.Message);
-        }
+        //     byte[] byteMsg = myLWWSetService.GetLastSynchronizedUpdate(1).Encode();
+        //     await connection.InvokeAsync("SendEncodedMessage", byteMsg);
+        // }
+        // catch (Exception ex)
+        // {
+        //     Console.Write(ex.Message);
+        // }
     }
 }
