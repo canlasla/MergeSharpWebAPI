@@ -12,10 +12,8 @@ namespace MergeSharpWebAPI.Controllers;
 [Route("[controller]")]
 public class LWWSetController : ControllerBase
 {
-    private readonly IHubContext<FrontEndHub> _hubContext;
-    public LWWSetController(IHubContext<FrontEndHub> hubContext)
+    public LWWSetController()
     {
-        _hubContext = hubContext;
     }
 
     // Get all LWW Sets
@@ -110,7 +108,6 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         LWWSetService<int>.AddElement(id, newElement);
-        _hubContext.Clients.All.SendAsync("ReceiveMessage", "This is test message");
 
         return NoContent();
     }
