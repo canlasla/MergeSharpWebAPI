@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using static MergeSharpWebAPI.Globals;
 
-
 namespace MergeSharpWebAPI.Controllers;
 
 [ApiController]
