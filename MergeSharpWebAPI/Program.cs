@@ -1,7 +1,9 @@
 using MergeSharpWebAPI.Hubs;
 using MergeSharpWebAPI.Services;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using static MergeSharpWebAPI.Globals;
+using MergeSharpWebAPI.Controllers;
 
 internal class Program
 {
@@ -57,11 +59,11 @@ internal class Program
 
         // Create a connection to the server
         // const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
-        const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
-        connection = new HubConnectionBuilder()
-                        .WithUrl(propogationMessageServer)
-                        .WithAutomaticReconnect()
-                        .Build();
+        //const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
+        //connection = new HubConnectionBuilder()
+        //                .WithUrl(propogationMessageServer)
+        //                .WithAutomaticReconnect()
+        //                .Build();
 
         connection.Reconnecting += error =>
         {
@@ -94,7 +96,9 @@ internal class Program
 
             //sean is doin this
             //raise receivemessage on javascript frontend
-            // the javscsript front end is subscribed to this 
+            // the javscsript front end is subscribed to this
+
+
         });
 
         // Start the connection
