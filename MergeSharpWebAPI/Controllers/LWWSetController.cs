@@ -22,6 +22,7 @@ public class LWWSetController : ControllerBase
         _hubContext = hubContext;
     }
 
+    [HttpGet("test")]
     public async Task SendMessage(FrontEndMessage message)
     {
         Console.WriteLine(message);
@@ -125,6 +126,8 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         myLWWSetService.AddElement(id, newElement);
+
+        Console.WriteLine(this._hubContext.Clients.All.ToString());
 
         await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
 
