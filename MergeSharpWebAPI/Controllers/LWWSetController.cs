@@ -23,7 +23,7 @@ public class LWWSetController : ControllerBase
         _hubContext = hubContext;
     }
 
-    [HttpGet("test")]
+    [HttpPost("test")]
     public async Task SendMessage(FrontEndMessage message)
     {
         Console.WriteLine(message);
@@ -120,7 +120,7 @@ public class LWWSetController : ControllerBase
     // Add an element to LWW Set
     // put -h Content-Type=application/json -c "5"
     [HttpPut("AddElement/{id}")]
-    public async Task<IActionResult> AddElement(int id, [FromBody]int newElement)
+    public async Task<IActionResult> AddElement(int id, [FromBody] int newElement)
     {
         var existingLWWSet = myLWWSetService.Get(id);
         if (existingLWWSet is null)
@@ -143,7 +143,7 @@ public class LWWSetController : ControllerBase
         if (existingLWWSet is null)
             return NotFound();
 
-        if(!myLWWSetService.RemoveElement(id, element))
+        if (!myLWWSetService.RemoveElement(id, element))
             return NotFound();
 
         await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
@@ -169,7 +169,7 @@ public class LWWSetController : ControllerBase
     //Merge set with id2 into set with id1
     // put -h Content-Type=application/json -c "id2"
     [HttpPut("Merge/{id1}")]
-    public async Task<IActionResult> Merge(int id1, [FromBody]int id2)
+    public async Task<IActionResult> Merge(int id1, [FromBody] int id2)
     {
         var existingLWWSet1 = myLWWSetService.Get(id1);
         var existingLWWSet2 = myLWWSetService.Get(id2);

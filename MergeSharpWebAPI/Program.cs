@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using static MergeSharpWebAPI.Globals;
 using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using System.Text;
 
 internal class Program
 {
@@ -58,7 +60,7 @@ internal class Program
         serverThread.Start();
 
         // Create a connection to the server
-        const string propogationMessageServer = "https://localhost:709/test";
+        // const string propogationMessageServer = "https://localhost:709/test";
         //const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
         // var connection2 = new HubConnectionBuilder()
         //                .WithUrl(propogationMessageServer)
@@ -82,16 +84,16 @@ internal class Program
                     };
 
 
-        using HttpClient client = new();
-        client.DefaultRequestHeaders.Accept.Clear();
+        // using HttpClient client = new();
+        // client.DefaultRequestHeaders.Accept.Clear();
 
-        static async Task ProcessRepositoriesAsync(HttpClient client)
-        {
-            var json = await client.GetStringAsync(
-                "https://localhost:7009/LWWSet/GetLWWSet/1");
+        // static async Task ProcessRepositoriesAsync(HttpClient client)
+        // {
+        //     var json = await client.GetStringAsync(
+        //         "https://localhost:7009/LWWSet/GetLWWSet/1");
 
-            Console.Write(json);
-        }
+        //     Console.Write(json);
+        // }
 
         // Define behaviour on events from server
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
@@ -109,21 +111,39 @@ internal class Program
             //sean is doin this
             //raise receivemessage on javascript frontend
             // the javscsript front end is subscribed to this
-            using (var client = new HttpClient())
-            {
-                client.BaseAddress = new Uri("http://localhost:7009");
+            // using (var client = new HttpClient())
+            // {
+            //     client.BaseAddress = new Uri("http://localhost:7009");
 
-                var content = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("1", "5")
-                });
+            //     var content = new FormUrlEncodedContent(new[]
+            //     {
+            //         new KeyValuePair<string, string>("1", "5")
+            //     });
 
-                var result = await client.PostAsync("AddElement/1", content);
+            //     var result = await client.PostAsync("AddElement/1", content);
 
-                string resultContent = await result.Content.ReadAsStringAsync();
+            //     string resultContent = await result.Content.ReadAsStringAsync();
 
-                Console.WriteLine(resultContent);
-            }
+            //     Console.WriteLine(resultContent);
+            // }
+
+            using HttpClient client = new();
+            client.DefaultRequestHeaders.Accept.Clear();
+
+            // static async Task ProcessRepositoriesAsync(HttpClient client)
+            // {
+
+            var testString = "my test string";
+
+            var jsonObject = JsonConvert.SerializeObject(testString);
+            var data = new StringContent(jsonObject, Encoding.UTF8, "application/json");
+
+            var json = await client.PostAsync(
+                "https://localhost:7009/LWWSet/test", data);
+
+
+            Console.Write(json);
+            // }
 
         });
 
@@ -158,17 +178,17 @@ internal class Program
         //     Console.Write(ex.Message);
         // }
 
-        try
-        {
-            while (true)
-            {
-                await Task.Delay(1000);
-                await ProcessRepositoriesAsync(client);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.Write(ex.Message);
-        }
+        // try
+        // {
+        //     while (true)
+        //     {
+        //         await Task.Delay(1000);
+        //         await ProcessRepositoriesAsync(client);
+        //     }
+        // }
+        // catch (Exception ex)
+        // {
+        //     Console.Write(ex.Message);
+        // }
     }
 }
