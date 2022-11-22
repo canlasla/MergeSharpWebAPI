@@ -134,11 +134,16 @@ internal class Program
             // static async Task ProcessRepositoriesAsync(HttpClient client)
             // {
 
-            var testString = myLWWSetService.Get(1);
-            FrontEndMessage myFrontEndMessage = new FrontEndMessage(testString.ToString());
+            var testString = JsonConvert.SerializeObject(myLWWSetService.Get(1));
+            Console.WriteLine("printing teststring");
+            Console.WriteLine(testString);
 
-            var jsonObject = JsonConvert.SerializeObject(myFrontEndMessage);
-            var data = new StringContent(jsonObject, Encoding.UTF8, "application/json");
+            // FrontEndMessage myFrontEndMessage = new FrontEndMessage(testString);
+            // Console.WriteLine("printing teststring");
+            // Console.WriteLine(myFrontEndMessage);
+
+            // var jsonObject = JsonConvert.SerializeObject(myFrontEndMessage);
+            var data = new StringContent(testString, Encoding.UTF8, "application/json");
             string myContent = await data.ReadAsStringAsync();
 
             Console.WriteLine("im porinting data");

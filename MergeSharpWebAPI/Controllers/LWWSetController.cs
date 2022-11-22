@@ -24,10 +24,10 @@ public class LWWSetController : ControllerBase
     }
 
     [HttpPut("test")]
-    public async Task<ActionResult> TestSendMessage([FromBody] FrontEndMessage message)
+    public async Task<ActionResult> TestSendMessage([FromBody] MergeSharpWebAPI.Models.LWWSet<int> message)
     {
-        Console.WriteLine(message.ToString());
-        // await _hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(message));
+        Console.WriteLine(message);
+        await _hubContext.Clients.All.ReceiveMessage(message);
         return NoContent();
     }
 
@@ -54,7 +54,6 @@ public class LWWSetController : ControllerBase
     public async Task<CreatedAtActionResult> Create(MergeSharpWebAPI.Models.LWWSet<int> lwwSet)
     {
         myLWWSetService.Add(lwwSet);
-        await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
         return CreatedAtAction(nameof(Create), new { id = lwwSet.Id }, lwwSet);
     }
 
@@ -72,7 +71,7 @@ public class LWWSetController : ControllerBase
 
         myLWWSetService.Update(lwwSet);
 
-        await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
+        await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
 
         return NoContent();
     }
@@ -87,8 +86,6 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         myLWWSetService.Delete(id);
-
-        await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
 
         return NoContent();
     }
@@ -133,7 +130,7 @@ public class LWWSetController : ControllerBase
 
         // await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
         await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
-        Console.WriteLine("Raised RecieveMessage event on all clients");
+        // Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
     }
     // Remove an element from LWW Set
@@ -147,7 +144,7 @@ public class LWWSetController : ControllerBase
         if (!myLWWSetService.RemoveElement(id, element))
             return NotFound();
 
-        await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
+        await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
 
         return NoContent();
     }
@@ -162,7 +159,7 @@ public class LWWSetController : ControllerBase
 
         myLWWSetService.ClearLWWSet(id);
 
-        await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
+        await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
 
         return NoContent();
     }
@@ -182,7 +179,7 @@ public class LWWSetController : ControllerBase
 
         myLWWSetService.MergeLWWSets(id1, id2);
 
-        await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
+        await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
 
         return NoContent();
     }

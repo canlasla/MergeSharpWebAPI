@@ -24,15 +24,15 @@ public class FrontEndHub : Hub<IFrontEndClient>
         return base.OnDisconnectedAsync(exception);
     }
 
-    public async Task SendMessage(FrontEndMessage message)
-    {
-        await this.Clients.All.ReceiveMessage(message);
-    }
+    // public async Task SendMessage(LWW message)
+    // {
+    //     await this.Clients.All.ReceiveMessage(message);
+    // }
 
-    public async Task SendMessageTest(string message)
-    {
-        Console.WriteLine("in SendMessageTest");
-        Console.WriteLine(message);
-        await this.Clients.All.ReceiveMessageTest(message);
-    }
+    // public async Task SendMessageTest(string message)
+    // {
+    //     Console.WriteLine("in SendMessageTest");
+    //     Console.WriteLine(message);
+    //     await this.Clients.All.ReceiveMessageTest(message);
+    // }
 }
