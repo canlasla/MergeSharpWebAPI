@@ -23,11 +23,12 @@ public class LWWSetController : ControllerBase
         _hubContext = hubContext;
     }
 
-    [HttpPost("test")]
-    public async Task SendMessage(FrontEndMessage message)
+    [HttpPut("test")]
+    public async Task<ActionResult> TestSendMessage([FromBody] FrontEndMessage message)
     {
-        Console.WriteLine(message);
-        await _hubContext.Clients.All.ReceiveMessage(message);
+        Console.WriteLine(message.ToString());
+        // await _hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(message));
+        return NoContent();
     }
 
     // Get all LWW Sets

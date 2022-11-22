@@ -6,6 +6,7 @@ using static MergeSharpWebAPI.Globals;
 using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.Text;
+using MergeSharpWebAPI.Models;
 
 internal class Program
 {
@@ -133,14 +134,18 @@ internal class Program
             // static async Task ProcessRepositoriesAsync(HttpClient client)
             // {
 
-            var testString = "my test string";
+            var testString = myLWWSetService.Get(1);
+            FrontEndMessage myFrontEndMessage = new FrontEndMessage(testString.ToString());
 
-            var jsonObject = JsonConvert.SerializeObject(testString);
+            var jsonObject = JsonConvert.SerializeObject(myFrontEndMessage);
             var data = new StringContent(jsonObject, Encoding.UTF8, "application/json");
+            string myContent = await data.ReadAsStringAsync();
 
-            Console.Write(data);
+            Console.WriteLine("im porinting data");
+            Console.WriteLine(myContent);
+            Console.WriteLine("im printed data");
 
-            var json = await client.PostAsync(
+            var json = await client.PutAsync(
                 "https://localhost:7009/LWWSet/test", data);
 
 
