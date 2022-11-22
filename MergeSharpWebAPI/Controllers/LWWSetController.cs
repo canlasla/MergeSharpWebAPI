@@ -1,7 +1,6 @@
 using MergeSharp;
 using MergeSharpWebAPI.Models;
 using MergeSharpWebAPI.Services;
-//using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
@@ -23,10 +22,9 @@ public class LWWSetController : ControllerBase
         _hubContext = hubContext;
     }
 
-    [HttpPut("test")]
-    public async Task<ActionResult> TestSendMessage([FromBody] MergeSharpWebAPI.Models.LWWSet<int> message)
+    [HttpPut("SendLWWSetToFrontEnd")]
+    public async Task<ActionResult> SendMessage([FromBody] MergeSharpWebAPI.Models.LWWSet<int> message)
     {
-        Console.WriteLine(message);
         await _hubContext.Clients.All.ReceiveMessage(message);
         return NoContent();
     }
@@ -70,9 +68,10 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         myLWWSetService.Update(lwwSet);
-
-        await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
-
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        }
         return NoContent();
     }
 
@@ -127,10 +126,12 @@ public class LWWSetController : ControllerBase
         myLWWSetService.AddElement(id, newElement);
 
         Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
-
-        // await this._hubContext.Clients.All.ReceiveMessage(new FrontEndMessage(myLWWSetService.Get(1).ToString()));
-        await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
-        // Console.WriteLine("Raised RecieveMessage event on all clients");
+        Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(id)));
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        }
+        Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
     }
     // Remove an element from LWW Set
@@ -144,8 +145,12 @@ public class LWWSetController : ControllerBase
         if (!myLWWSetService.RemoveElement(id, element))
             return NotFound();
 
-        await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
-
+        Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(id)));
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        }
+        Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
     }
 
@@ -158,9 +163,10 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         myLWWSetService.ClearLWWSet(id);
-
-        await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
-
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        }
         return NoContent();
     }
 
@@ -178,9 +184,10 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         myLWWSetService.MergeLWWSets(id1, id2);
-
-        await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
-
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        }
         return NoContent();
     }
 }

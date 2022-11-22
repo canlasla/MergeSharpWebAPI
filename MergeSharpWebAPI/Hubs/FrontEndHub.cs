@@ -23,16 +23,4 @@ public class FrontEndHub : Hub<IFrontEndClient>
         UserHandler.ConnectedIds.Remove(Context.ConnectionId);
         return base.OnDisconnectedAsync(exception);
     }
-
-    // public async Task SendMessage(LWW message)
-    // {
-    //     await this.Clients.All.ReceiveMessage(message);
-    // }
-
-    // public async Task SendMessageTest(string message)
-    // {
-    //     Console.WriteLine("in SendMessageTest");
-    //     Console.WriteLine(message);
-    //     await this.Clients.All.ReceiveMessageTest(message);
-    // }
 }

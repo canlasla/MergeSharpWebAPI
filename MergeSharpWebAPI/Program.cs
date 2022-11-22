@@ -60,14 +60,6 @@ internal class Program
         Thread serverThread = new Thread(StartServer);
         serverThread.Start();
 
-        // Create a connection to the server
-        // const string propogationMessageServer = "https://localhost:709/test";
-        //const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
-        // var connection2 = new HubConnectionBuilder()
-        //                .WithUrl(propogationMessageServer)
-        //                .WithAutomaticReconnect()
-        //                .Build();
-
         connection.Reconnecting += error =>
         {
             System.Diagnostics.Debug.Assert(connection.State == HubConnectionState.Reconnecting);
@@ -84,18 +76,6 @@ internal class Program
                         await connection.StartAsync();
                     };
 
-
-        // using HttpClient client = new();
-        // client.DefaultRequestHeaders.Accept.Clear();
-
-        // static async Task ProcessRepositoriesAsync(HttpClient client)
-        // {
-        //     var json = await client.GetStringAsync(
-        //         "https://localhost:7009/LWWSet/GetLWWSet/1");
-
-        //     Console.Write(json);
-        // }
-
         // Define behaviour on events from server
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
@@ -105,58 +85,22 @@ internal class Program
             Console.WriteLine("lwwMsg.addSet:");
             Console.WriteLine(string.Join(",", lwwMsg.addSet.Keys.ToList()));
 
-            //transfer data between threads
-            // merge the data to the correct thread
             myLWWSetService.MergeLWWSets(1, lwwMsg);
-
-            //sean is doin this
-            //raise receivemessage on javascript frontend
-            // the javscsript front end is subscribed to this
-            // using (var client = new HttpClient())
-            // {
-            //     client.BaseAddress = new Uri("http://localhost:7009");
-
-            //     var content = new FormUrlEncodedContent(new[]
-            //     {
-            //         new KeyValuePair<string, string>("1", "5")
-            //     });
-
-            //     var result = await client.PostAsync("AddElement/1", content);
-
-            //     string resultContent = await result.Content.ReadAsStringAsync();
-
-            //     Console.WriteLine(resultContent);
-            // }
 
             using HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
 
-            // static async Task ProcessRepositoriesAsync(HttpClient client)
-            // {
+            var serializedLwwSet = JsonConvert.SerializeObject(myLWWSetService.Get(1));
 
-            var testString = JsonConvert.SerializeObject(myLWWSetService.Get(1));
-            Console.WriteLine("printing teststring");
-            Console.WriteLine(testString);
+            var requestData = new StringContent(serializedLwwSet, Encoding.UTF8, "application/json");
+            //string myContent = await requestData.ReadAsStringAsync();
+            //Console.WriteLine("im porinting data");
+            //Console.WriteLine(myContent);
 
-            // FrontEndMessage myFrontEndMessage = new FrontEndMessage(testString);
-            // Console.WriteLine("printing teststring");
-            // Console.WriteLine(myFrontEndMessage);
-
-            // var jsonObject = JsonConvert.SerializeObject(myFrontEndMessage);
-            var data = new StringContent(testString, Encoding.UTF8, "application/json");
-            string myContent = await data.ReadAsStringAsync();
-
-            Console.WriteLine("im porinting data");
-            Console.WriteLine(myContent);
-            Console.WriteLine("im printed data");
-
-            var json = await client.PutAsync(
-                "https://localhost:7009/LWWSet/test", data);
-
-
-            Console.Write(json);
-            // }
-
+            Console.WriteLine("Sending Put Request for front-end");
+            var result = await client.PutAsync(
+                "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestData);
+            Console.WriteLine(result);
         });
 
         // Start the connection
@@ -167,40 +111,8 @@ internal class Program
         }
         catch (Exception ex)
         {
-            Console.WriteLine("dkjfshkdjh");
+            Console.WriteLine("Error occured when connecting to server:");
             Console.WriteLine(ex.Message);
-            Console.WriteLine("lllllllllllll");
         }
-
-        // Test sending a message to the server
-        // try
-        // {
-        //MergeSharp.LWWSet<int> set1 = new();
-        //set1.Add(5);
-        //set1.Add(6);
-
-        //myLWWSetService.AddElement(1, 69);
-        //figure out how to get crdt data from the other thread
-
-        // byte[] byteMsg = myLWWSetService.GetLastSynchronizedUpdate(1).Encode();
-        // await connection.InvokeAsync("SendEncodedMessage", byteMsg);
-        // }
-        // catch (Exception ex)
-        // {
-        //     Console.Write(ex.Message);
-        // }
-
-        // try
-        // {
-        //     while (true)
-        //     {
-        //         await Task.Delay(1000);
-        //         await ProcessRepositoriesAsync(client);
-        //     }
-        // }
-        // catch (Exception ex)
-        // {
-        //     Console.Write(ex.Message);
-        // }
     }
 }
