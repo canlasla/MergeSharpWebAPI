@@ -3,11 +3,12 @@ using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using static MergeSharpWebAPI.Globals;
-using MergeSharpWebAPI.Controllers;
+using System.Net.Http.Headers;
 
 internal class Program
 {
-    private static void StartServer() {
+    private static void StartServer()
+    {
         var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
         var builder = WebApplication.CreateBuilder();
@@ -80,6 +81,18 @@ internal class Program
                         await connection.StartAsync();
                     };
 
+
+        using HttpClient client = new();
+        client.DefaultRequestHeaders.Accept.Clear();
+
+        static async Task ProcessRepositoriesAsync(HttpClient client)
+        {
+            var json = await client.GetStringAsync(
+                "https://localhost:7009/LWWSet/GetLWWSet/1");
+
+            Console.Write(json);
+        }
+
         // Define behaviour on events from server
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
@@ -130,20 +143,32 @@ internal class Program
         // Test sending a message to the server
         // try
         // {
-        //     //MergeSharp.LWWSet<int> set1 = new();
-        //     //set1.Add(5);
-        //     //set1.Add(6);
+        //MergeSharp.LWWSet<int> set1 = new();
+        //set1.Add(5);
+        //set1.Add(6);
 
-        //     //myLWWSetService.AddElement(1, 69);
+        //myLWWSetService.AddElement(1, 69);
+        //figure out how to get crdt data from the other thread
 
-        //     //figure out how to get crdt data from the other thread
-
-        //     byte[] byteMsg = myLWWSetService.GetLastSynchronizedUpdate(1).Encode();
-        //     await connection.InvokeAsync("SendEncodedMessage", byteMsg);
+        // byte[] byteMsg = myLWWSetService.GetLastSynchronizedUpdate(1).Encode();
+        // await connection.InvokeAsync("SendEncodedMessage", byteMsg);
         // }
         // catch (Exception ex)
         // {
         //     Console.Write(ex.Message);
         // }
+
+        try
+        {
+            while (true)
+            {
+                await Task.Delay(1000);
+                await ProcessRepositoriesAsync(client);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.Write(ex.Message);
+        }
     }
 }
