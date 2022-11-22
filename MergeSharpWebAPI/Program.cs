@@ -2,10 +2,7 @@ using MergeSharpWebAPI.Hubs;
 using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.SignalR.Client;
 using static MergeSharpWebAPI.Globals;
-<<<<<<< Updated upstream
-=======
 using System.Net.Http.Headers;
->>>>>>> Stashed changes
 
 internal class Program
 {
@@ -132,15 +129,8 @@ internal class Program
             //set1.Add(6);
 
             //myLWWSetService.AddElement(1, 69);
-<<<<<<< Updated upstream
-
             //figure out how to get crdt data from the other thread
 
-=======
-
-            //figure out how to get crdt data from the other thread
-
->>>>>>> Stashed changes
             byte[] byteMsg = myLWWSetService.GetLastSynchronizedUpdate(1).Encode();
             await connection.InvokeAsync("SendEncodedMessage", byteMsg);
         }
