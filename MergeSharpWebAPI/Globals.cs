@@ -20,8 +20,8 @@ namespace MergeSharpWebAPI;
 public static class Globals
 {
     public static LWWSetService<int> myLWWSetService = new LWWSetService<int>();
-    // private const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
-    private const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
+    private const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
+    // private const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
     // private const string propogationMessageServer = "http://localhost:5106/hubs/propagationmessage";
 
     public static HubConnection connection = new HubConnectionBuilder()

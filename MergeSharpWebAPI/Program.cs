@@ -138,6 +138,8 @@ internal class Program
             var jsonObject = JsonConvert.SerializeObject(testString);
             var data = new StringContent(jsonObject, Encoding.UTF8, "application/json");
 
+            Console.Write(data);
+
             var json = await client.PostAsync(
                 "https://localhost:7009/LWWSet/test", data);
 
