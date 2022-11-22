@@ -1,10 +1,13 @@
 using MergeSharp;
 using MergeSharpWebAPI.Models;
 using MergeSharpWebAPI.Services;
-//using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using static MergeSharpWebAPI.Globals;
+using MergeSharpWebAPI.Hubs;
+using MergeSharpWebAPI.Hubs.Clients;
+using Microsoft.AspNetCore.SignalR.Client;
 
 namespace MergeSharpWebAPI.Controllers;
 
@@ -12,8 +15,18 @@ namespace MergeSharpWebAPI.Controllers;
 [Route("[controller]")]
 public class LWWSetController : ControllerBase
 {
-    public LWWSetController()
+    private readonly IHubContext<FrontEndHub, IFrontEndClient> _hubContext;
+
+    public LWWSetController(IHubContext<FrontEndHub, IFrontEndClient> hubContext)
     {
+        _hubContext = hubContext;
+    }
+
+    [HttpPut("SendLWWSetToFrontEnd")]
+    public async Task<ActionResult> SendMessage([FromBody] MergeSharpWebAPI.Models.LWWSet<int> message)
+    {
+        await _hubContext.Clients.All.ReceiveMessage(message);
+        return NoContent();
     }
 
     // Get all LWW Sets
@@ -45,7 +58,7 @@ public class LWWSetController : ControllerBase
     // Update an LWW Set
     [HttpPut("UpdateLWWSet/{id}")]
     //put -h Content-Type=application/json -c "{"Id":<some id, "LwwSet":[x, y, z]}"
-    public IActionResult Update(int id, MergeSharpWebAPI.Models.LWWSet<int> lwwSet)
+    public async Task<ActionResult> Update(int id, MergeSharpWebAPI.Models.LWWSet<int> lwwSet)
     {
         if (id != lwwSet.Id)
             return BadRequest();
@@ -55,7 +68,10 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         myLWWSetService.Update(lwwSet);
-
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        }
         return NoContent();
     }
 
@@ -101,7 +117,7 @@ public class LWWSetController : ControllerBase
     // Add an element to LWW Set
     // put -h Content-Type=application/json -c "5"
     [HttpPut("AddElement/{id}")]
-    public IActionResult AddElement(int id, [FromBody]int newElement)
+    public async Task<IActionResult> AddElement(int id, [FromBody] int newElement)
     {
         var existingLWWSet = myLWWSetService.Get(id);
         if (existingLWWSet is null)
@@ -109,39 +125,55 @@ public class LWWSetController : ControllerBase
 
         myLWWSetService.AddElement(id, newElement);
 
+        Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
+        Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(id)));
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        }
+        Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
     }
     // Remove an element from LWW Set
     [HttpPut("RemoveElement/{id}")]
-    public IActionResult RemoveElement(int id, [FromBody] int element)
+    public async Task<IActionResult> RemoveElement(int id, [FromBody] int element)
     {
         var existingLWWSet = myLWWSetService.Get(id);
         if (existingLWWSet is null)
             return NotFound();
 
-        if(!myLWWSetService.RemoveElement(id, element))
+        if (!myLWWSetService.RemoveElement(id, element))
             return NotFound();
 
+        Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(id)));
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        }
+        Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
     }
 
     // Clear an LWW Set
     [HttpDelete("ClearLWWSet/{id}")]
-    public IActionResult ClearLWWSet(int id)
+    public async Task<IActionResult> ClearLWWSet(int id)
     {
         var existingLWWSet = myLWWSetService.Get(id);
         if (existingLWWSet is null)
             return NotFound();
 
         myLWWSetService.ClearLWWSet(id);
-
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        }
         return NoContent();
     }
 
     //Merge set with id2 into set with id1
     // put -h Content-Type=application/json -c "id2"
     [HttpPut("Merge/{id1}")]
-    public IActionResult Merge(int id1, [FromBody]int id2)
+    public async Task<IActionResult> Merge(int id1, [FromBody] int id2)
     {
         var existingLWWSet1 = myLWWSetService.Get(id1);
         var existingLWWSet2 = myLWWSetService.Get(id2);
@@ -152,7 +184,10 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         myLWWSetService.MergeLWWSets(id1, id2);
-
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+        }
         return NoContent();
     }
 }

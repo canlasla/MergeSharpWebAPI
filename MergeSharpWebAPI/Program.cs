@@ -1,11 +1,17 @@
 using MergeSharpWebAPI.Hubs;
 using MergeSharpWebAPI.Services;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
 using static MergeSharpWebAPI.Globals;
+using System.Net.Http.Headers;
+using Newtonsoft.Json;
+using System.Text;
+using MergeSharpWebAPI.Models;
 
 internal class Program
 {
-    private static void StartServer() {
+    private static void StartServer()
+    {
         var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
         var builder = WebApplication.CreateBuilder();
@@ -44,7 +50,6 @@ internal class Program
 
         _ = app.MapControllers();
         _ = app.MapGet("/", () => "Hello world!");
-        _ = app.MapHub<ChatHub>("/hubs/chat");
         _ = app.MapHub<FrontEndHub>("/hubs/frontendmessage");
 
         app.Run();
@@ -54,14 +59,6 @@ internal class Program
     {
         Thread serverThread = new Thread(StartServer);
         serverThread.Start();
-
-        // Create a connection to the server
-        // const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
-        const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
-        connection = new HubConnectionBuilder()
-                        .WithUrl(propogationMessageServer)
-                        .WithAutomaticReconnect()
-                        .Build();
 
         connection.Reconnecting += error =>
         {
@@ -80,7 +77,7 @@ internal class Program
                     };
 
         // Define behaviour on events from server
-        _ = connection.On<byte[]>("ReceiveEncodedMessage", byteMsg =>
+        _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
             MergeSharp.LWWSetMsg<int> lwwMsg = new();
             lwwMsg.Decode(byteMsg);
@@ -88,13 +85,22 @@ internal class Program
             Console.WriteLine("lwwMsg.addSet:");
             Console.WriteLine(string.Join(",", lwwMsg.addSet.Keys.ToList()));
 
-            //transfer data between threads
-            // merge the data to the correct thread
             myLWWSetService.MergeLWWSets(1, lwwMsg);
 
-            //sean is doin this
-            //raise receivemessage on javascript frontend
-            // the javscsript front end is subscribed to this 
+            using HttpClient client = new();
+            client.DefaultRequestHeaders.Accept.Clear();
+
+            var serializedLwwSet = JsonConvert.SerializeObject(myLWWSetService.Get(1));
+
+            var requestData = new StringContent(serializedLwwSet, Encoding.UTF8, "application/json");
+            //string myContent = await requestData.ReadAsStringAsync();
+            //Console.WriteLine("im porinting data");
+            //Console.WriteLine(myContent);
+
+            Console.WriteLine("Sending Put Request for front-end");
+            var result = await client.PutAsync(
+                "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestData);
+            Console.WriteLine(result);
         });
 
         // Start the connection
@@ -105,26 +111,8 @@ internal class Program
         }
         catch (Exception ex)
         {
-            Console.Write(ex.Message);
-        }
-
-        // Test sending a message to the server
-        try
-        {
-            //MergeSharp.LWWSet<int> set1 = new();
-            //set1.Add(5);
-            //set1.Add(6);
-
-            //myLWWSetService.AddElement(1, 69);
-
-            //figure out how to get crdt data from the other thread
-
-            byte[] byteMsg = myLWWSetService.GetLastSynchronizedUpdate(1).Encode();
-            await connection.InvokeAsync("SendEncodedMessage", byteMsg);
-        }
-        catch (Exception ex)
-        {
-            Console.Write(ex.Message);
+            Console.WriteLine("Error occured when connecting to server:");
+            Console.WriteLine(ex.Message);
         }
     }
 }

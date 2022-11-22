@@ -8,6 +8,7 @@ namespace MergeSharpWebAPI.Services;
 public class LWWSetService<T>
 {
     private List<MergeSharpWebAPI.Models.LWWSet<T>> LWWSets { get; set; }
+
     public LWWSetService()
     {
         LWWSets = new List<MergeSharpWebAPI.Models.LWWSet<T>>

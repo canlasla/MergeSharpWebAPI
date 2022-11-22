@@ -2,9 +2,9 @@ namespace MergeSharpWebAPI.Models;
 
 public class FrontEndMessage
 {
-    public FrontEndMessage(string message)
+    public FrontEndMessage(object message)
     {
         this.Message = message;
     }
-    public string Message { get; set; }
+    public object Message { get; set; }
 }
