@@ -5,7 +5,7 @@ namespace MergeSharpWebAPI.Hubs.Clients;
 
 public interface IFrontEndClient
 {
-    Task ReceiveMessage(LWWSet<int> message);
-    Task ReceiveMessage(TPTPGraph message);
+    Task ReceiveMessage(LWWSetModel<int> message);
+    Task ReceiveMessage(TPTPGraphModel message);
     Task ReceiveMessageTest(string message);
 }

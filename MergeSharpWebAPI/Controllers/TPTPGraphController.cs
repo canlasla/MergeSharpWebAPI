@@ -22,18 +22,18 @@ public class TPTPGraphController : ControllerBase
         _hubContext = hubContext;
     }
 
-    // [HttpPut("SendTPTPGraphToFrontEnd")]
-    // public async Task<ActionResult> SendMessage([FromBody] MergeSharpWebAPI.Models.TPTPGraph message)
-    // {
-    //     await _hubContext.Clients.All.ReceiveMessage(message);
-    //     return NoContent();
-    // }
+    [HttpPut("SendTPTPGraphToFrontEnd")]
+    public async Task<ActionResult> SendMessage([FromBody] MergeSharpWebAPI.Models.TPTPGraphModel message)
+    {
+        await _hubContext.Clients.All.ReceiveMessage(message);
+        return NoContent();
+    }
 
-    // Get all LWW Sets
+    // Get all TPTP Graphs
     [HttpGet("GetAllTPTPGraphs")]
     public ActionResult<string> GetAll() => JsonConvert.SerializeObject(myTPTPGraphService.GetAll());
 
-    // Get LWW Set by id
+    // Get TPTP Graph by id
     [HttpGet("GetTPTPGraph/{id}")]
     public ActionResult<string> Get(int id)
     {
@@ -45,113 +45,176 @@ public class TPTPGraphController : ControllerBase
         return JsonConvert.SerializeObject(TPTPGraph);
     }
 
-    // Create LWW Set
+    // Create TPTP Graph
     [HttpPost("CreateTPTPGraph")]
     // using httprepl
-    //post -h Content-Type=application/json -c "{"Id":<new id>, "TPTPGraph":[x, y, z]}"
-    public IActionResult Create(MergeSharpWebAPI.Models.TPTPGraph mytptpGraph)
+    //post -h Content-Type=application/json -c "<a new id here>"
+    public IActionResult Create([FromBody] int id)
     {
-        myTPTPGraphService.Add(mytptpGraph);
-        return CreatedAtAction(nameof(Create), new { id = mytptpGraph.Id }, mytptpGraph);
+        myTPTPGraphService.Add(new MergeSharpWebAPI.Models.TPTPGraphModel { Id = id, TptpGraph = new MergeSharp.TPTPGraph() });
+        return CreatedAtAction(nameof(Create), new { Id = id }, myTPTPGraphService.Get(id));
     }
 
-    // // Delete an LWW Set
-    // [HttpDelete("DeleteTPTPGraph/{id}")]
-    // public IActionResult Delete(int id)
-    // {
-    //     var TPTPGraph = myTPTPGraphService.Get(id);
+    // Delete a TPTP Graph
+    [HttpDelete("DeleteTPTPGraph/{id}")]
+    public IActionResult Delete(int id)
+    {
+        var TPTPGraph = myTPTPGraphService.Get(id);
 
-    //     if (TPTPGraph is null)
-    //         return NotFound();
+        if (TPTPGraph is null)
+            return NotFound();
 
-    //     myTPTPGraphService.Delete(id);
+        myTPTPGraphService.Delete(id);
 
-    //     return NoContent();
-    // }
+        return NoContent();
+    }
 
+    //Check if TPTP Graph contains vertex
+    [HttpGet("ContainsVertex/{id}/{v}")]
+    public ActionResult<string> ContainsVertex(int id, string v)
+    {
+        var TPTPGraph = myTPTPGraphService.Get(id);
 
-    // //Check if LWW Set contains element
-    // [HttpGet("ContainsVertex/{id}/{element}")]
-    // public ActionResult<string> ContainsVertex(int id, Guid element)
-    // {
-    //     var TPTPGraph = myTPTPGraphService.Get(id);
+        if (TPTPGraph == null)
+            return NotFound();
 
-    //     if (TPTPGraph == null)
-    //         return NotFound();
+        return JsonConvert.SerializeObject(myTPTPGraphService.TPTPGraphContains(id, new Guid(v)));
+    }
 
-    //     return JsonConvert.SerializeObject(myTPTPGraphService.TPTPGraphContains(id, element));
-    // }
+    [HttpGet("ContainsEdge/{id}/{v1}/{v2}")]
+    public ActionResult<string> ContainsEdge(int id, string v1, string v2)
+    {
+        var TPTPGraph = myTPTPGraphService.Get(id);
 
-    // [HttpGet("ContainsEdge/{id}/{element}")]
-    // public ActionResult<string> ContainsEdge(int id, Guid element)
-    // {
-    //     var TPTPGraph = myTPTPGraphService.Get(id);
+        if (TPTPGraph == null)
+            return NotFound();
 
-    //     if (TPTPGraph == null)
-    //         return NotFound();
+        return JsonConvert.SerializeObject(myTPTPGraphService.TPTPGraphContains(id, new Guid(v1), new Guid(v2)));
+    }
 
-    //     return JsonConvert.SerializeObject(myTPTPGraphService.TPTPGraphContains(id, element));
-    // }
+    [HttpGet("LookupVertices/{id}")]
+    public ActionResult<string> LookupVertices(int id)
+    {
+        var TPTPGraph = myTPTPGraphService.Get(id);
 
+        if (TPTPGraph == null)
+            return NotFound();
 
-    // // Add an element to LWW Set
-    // // put -h Content-Type=application/json -c "5"
-    // [HttpPut("AddVertex/{id}")]
-    // public async Task<IActionResult> AddVertex(int id, [FromBody] Guid newElement)
-    // {
-    //     var existingTPTPGraph = myTPTPGraphService.Get(id);
-    //     if (existingTPTPGraph is null)
-    //         return NotFound();
+        return JsonConvert.SerializeObject(myTPTPGraphService.LookupVertices(id));
+    }
 
-    //     myTPTPGraphService.AddVertex(id, newElement);
+    [HttpGet("LookupEdges/{id}")]
+    public ActionResult<string> LookupEdges(int id)
+    {
+        var TPTPGraph = myTPTPGraphService.Get(id);
 
-    //     Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
-    //     Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
-    //     if (connection.State == HubConnectionState.Connected)
-    //     {
-    //         await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
-    //     }
-    //     Console.WriteLine("Raised RecieveMessage event on all clients");
-    //     return NoContent();
-    // }
-    // // Remove an element from LWW Set
-    // [HttpPut("RemoveVertex/{id}")]
-    // public async Task<IActionResult> RemoveVertex(int id, [FromBody] Guid element)
-    // {
-    //     var existingTPTPGraph = myTPTPGraphService.Get(id);
-    //     if (existingTPTPGraph is null)
-    //         return NotFound();
+        if (TPTPGraph == null)
+            return NotFound();
 
-    //     if (!myTPTPGraphService.RemoveVertex(id, element))
-    //         return NotFound();
+        return JsonConvert.SerializeObject(myTPTPGraphService.LookupEdges(id));
+    }
 
-    //     Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
-    //     if (connection.State == HubConnectionState.Connected)
-    //     {
-    //         await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
-    //     }
-    //     Console.WriteLine("Raised RecieveMessage event on all clients");
-    //     return NoContent();
-    // }
+    // Add a vertex to TPTP Graph
+    [HttpGet("AddVertex/{id}")]
+    public async Task<IActionResult> AddVertex(int id)
+    {
+        var existingTPTPGraph = myTPTPGraphService.Get(id);
+        if (existingTPTPGraph is null)
+            return NotFound();
 
-    // //Merge set with id2 into set with id1
-    // // put -h Content-Type=application/json -c "id2"
-    // [HttpPut("Merge/{id1}")]
-    // public async Task<IActionResult> Merge(int id1, [FromBody] int id2)
-    // {
-    //     var existingTPTPGraph1 = myTPTPGraphService.Get(id1);
-    //     var existingTPTPGraph2 = myTPTPGraphService.Get(id2);
+        myTPTPGraphService.AddVertex(id, Guid.NewGuid());
 
-    //     if (existingTPTPGraph1 is null)
-    //         return NotFound();
-    //     else if (existingTPTPGraph2 is null)
-    //         return NotFound();
+        Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
+        Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+        }
+        Console.WriteLine("Raised RecieveMessage event on all clients");
+        return NoContent();
+    }
 
-    //     myTPTPGraphService.MergeTPTPGraphs(id1, id2);
-    //     if (connection.State == HubConnectionState.Connected)
-    //     {
-    //         await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
-    //     }
-    //     return NoContent();
-    // }
+    // Remove a vertex from TPTP Graph
+    [HttpPut("RemoveVertex/{id}")]
+    // put -h Content-Type=application/json -c ""f628ec6f-936c-4277-bfce-2e220df11fa1""
+    public async Task<IActionResult> RemoveVertex(int id, [FromBody] string element)
+    {
+        var existingTPTPGraph = myTPTPGraphService.Get(id);
+        if (existingTPTPGraph is null)
+            return NotFound();
+
+        if (!myTPTPGraphService.RemoveVertex(id, new Guid(element)))
+            return NotFound();
+
+        Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+        }
+        Console.WriteLine("Raised RecieveMessage event on all clients");
+        return NoContent();
+    }
+
+    // Add an edge to TPTP Graph
+    // put -h Content-Type=application/json -c ""<v2 guid>""
+    [HttpPut("AddEdge/{id}/{v1}")]
+    public async Task<IActionResult> AddEdge(int id, string v1, [FromBody] string v2)
+    {
+        var existingTPTPGraph = myTPTPGraphService.Get(id);
+        if (existingTPTPGraph is null)
+            return NotFound();
+
+        myTPTPGraphService.AddEdge(id, new Guid(v1), new Guid(v2));
+
+        Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
+        Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+        }
+        Console.WriteLine("Raised RecieveMessage event on all clients");
+        return NoContent();
+    }
+
+    // Remove an edge from TPTP Graph
+    [HttpPut("RemoveEdge/{id}/{v1}")]
+    // put -h Content-Type=application/json -c ""f628ec6f-936c-4277-bfce-2e220df11fa1""
+    public async Task<IActionResult> RemoveEdge(int id, string v1, [FromBody] string v2)
+    {
+        var existingTPTPGraph = myTPTPGraphService.Get(id);
+        if (existingTPTPGraph is null)
+            return NotFound();
+
+        if (!myTPTPGraphService.RemoveEdge(id, new Guid(v1), new Guid(v2)))
+            return NotFound();
+
+        Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+        }
+        Console.WriteLine("Raised RecieveMessage event on all clients");
+        return NoContent();
+    }
+
+    //Merge TPTP Graph with id2 into TPTP Graph with id1
+    // put -h Content-Type=application/json -c "id2"
+    [HttpPut("Merge/{id1}")]
+    public async Task<IActionResult> Merge(int id1, [FromBody] int id2)
+    {
+        var existingTPTPGraph1 = myTPTPGraphService.Get(id1);
+        var existingTPTPGraph2 = myTPTPGraphService.Get(id2);
+
+        if (existingTPTPGraph1 is null)
+            return NotFound();
+        else if (existingTPTPGraph2 is null)
+            return NotFound();
+
+        myTPTPGraphService.MergeTPTPGraphs(id1, id2);
+        if (connection.State == HubConnectionState.Connected)
+        {
+            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+        }
+        return NoContent();
+    }
 }

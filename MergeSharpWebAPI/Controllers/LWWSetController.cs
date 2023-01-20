@@ -23,7 +23,7 @@ public class LWWSetController : ControllerBase
     }
 
     [HttpPut("SendLWWSetToFrontEnd")]
-    public async Task<ActionResult> SendMessage([FromBody] MergeSharpWebAPI.Models.LWWSet<int> message)
+    public async Task<ActionResult> SendMessage([FromBody] MergeSharpWebAPI.Models.LWWSetModel<int> message)
     {
         await _hubContext.Clients.All.ReceiveMessage(message);
         return NoContent();
@@ -49,7 +49,7 @@ public class LWWSetController : ControllerBase
     [HttpPost("CreateLWWSet")]
     // using httprepl
     //post -h Content-Type=application/json -c "{"Id":<new id>, "LwwSet":[x, y, z]}"
-    public IActionResult Create(MergeSharpWebAPI.Models.LWWSet<int> lwwSet)
+    public IActionResult Create(MergeSharpWebAPI.Models.LWWSetModel<int> lwwSet)
     {
         myLWWSetService.Add(lwwSet);
         return CreatedAtAction(nameof(Create), new { id = lwwSet.Id }, lwwSet);
@@ -58,7 +58,7 @@ public class LWWSetController : ControllerBase
     // Update an LWW Set
     [HttpPut("UpdateLWWSet/{id}")]
     //put -h Content-Type=application/json -c "{"Id":<some id, "LwwSet":[x, y, z]}"
-    public async Task<ActionResult> Update(int id, MergeSharpWebAPI.Models.LWWSet<int> lwwSet)
+    public async Task<ActionResult> Update(int id, MergeSharpWebAPI.Models.LWWSetModel<int> lwwSet)
     {
         if (id != lwwSet.Id)
             return BadRequest();

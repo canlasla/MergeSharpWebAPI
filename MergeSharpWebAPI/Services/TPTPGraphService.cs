@@ -5,26 +5,26 @@ using Newtonsoft.Json;
 
 namespace MergeSharpWebAPI.Services;
 
-public class TPTPGraphService<T>
+public class TPTPGraphService
 {
-    private List<MergeSharpWebAPI.Models.TPTPGraph> TPTPGraphs { get; set; }
+    private List<MergeSharpWebAPI.Models.TPTPGraphModel> TPTPGraphs { get; set; }
 
     public TPTPGraphService()
     {
-        TPTPGraphs = new List<MergeSharpWebAPI.Models.TPTPGraph>
+        TPTPGraphs = new List<MergeSharpWebAPI.Models.TPTPGraphModel>
         {
-            new MergeSharpWebAPI.Models.TPTPGraph { Id = 1, myTptpGraph=new MergeSharp.TPTPGraph() },
+            new MergeSharpWebAPI.Models.TPTPGraphModel { Id = 1, TptpGraph=new MergeSharp.TPTPGraph() },
         };
     }
 
     //get all graphs
-    public List<MergeSharpWebAPI.Models.TPTPGraph> GetAll() => TPTPGraphs;
+    public List<MergeSharpWebAPI.Models.TPTPGraphModel> GetAll() => TPTPGraphs;
 
     //get a graph
-    public MergeSharpWebAPI.Models.TPTPGraph? Get(int id) => TPTPGraphs.FirstOrDefault(p => p.Id == id);
+    public MergeSharpWebAPI.Models.TPTPGraphModel? Get(int id) => TPTPGraphs.FirstOrDefault(p => p.Id == id);
 
     // add a graph
-    public void Add(MergeSharpWebAPI.Models.TPTPGraph tptpGraph)
+    public void Add(MergeSharpWebAPI.Models.TPTPGraphModel tptpGraph)
     {
         TPTPGraphs.Add(tptpGraph);
     }
@@ -32,7 +32,7 @@ public class TPTPGraphService<T>
     // remove a graph
     public void Delete(int id)
     {
-        MergeSharpWebAPI.Models.TPTPGraph TPTPGraph = Get(id);
+        MergeSharpWebAPI.Models.TPTPGraphModel TPTPGraph = Get(id);
         if (TPTPGraph is null)
             return;
 
@@ -46,7 +46,7 @@ public class TPTPGraphService<T>
         if (index == -1)
             return;
 
-        TPTPGraphs[index].myTptpGraph.AddVertex(element);
+        TPTPGraphs[index].TptpGraph.AddVertex(element);
     }
 
     // remove a vertex
@@ -56,7 +56,7 @@ public class TPTPGraphService<T>
         if (index == -1)
             return false;
 
-        return TPTPGraphs[index].myTptpGraph.RemoveVertex(element);
+        return TPTPGraphs[index].TptpGraph.RemoveVertex(element);
     }
 
     // add an edge
@@ -66,7 +66,7 @@ public class TPTPGraphService<T>
         if (index == -1)
             return false;
 
-        return TPTPGraphs[index].myTptpGraph.AddEdge(v1, v2);
+        return TPTPGraphs[index].TptpGraph.AddEdge(v1, v2);
     }
 
     // remove an edge
@@ -76,7 +76,7 @@ public class TPTPGraphService<T>
         if (index == -1)
             return false;
 
-        return TPTPGraphs[index].myTptpGraph.RemoveEdge(v1, v2);
+        return TPTPGraphs[index].TptpGraph.RemoveEdge(v1, v2);
     }
 
     // lookup edges
@@ -86,7 +86,7 @@ public class TPTPGraphService<T>
         if (index == -1)
             return null;
 
-        return TPTPGraphs[index].myTptpGraph.LookupEdges();
+        return TPTPGraphs[index].TptpGraph.LookupEdges();
     }
 
     // lookup vertices
@@ -96,45 +96,49 @@ public class TPTPGraphService<T>
         if (index == -1)
             return null;
 
-        return TPTPGraphs[index].myTptpGraph.LookupVertices();
+        return TPTPGraphs[index].TptpGraph.LookupVertices();
     }
 
+    // check if graph contains vertex
     public bool TPTPGraphContains(int Id, Guid v)
     {
         var index = TPTPGraphs.FindIndex(p => p.Id == Id);
         if (index == -1)
             return false;
 
-        return TPTPGraphs[index].myTptpGraph.Contains(v);
+        return TPTPGraphs[index].TptpGraph.Contains(v);
     }
 
+    // check if graph contains edge
     public bool TPTPGraphContains(int Id, Guid v1, Guid v2)
     {
         var index = TPTPGraphs.FindIndex(p => p.Id == Id);
         if (index == -1)
             return false;
 
-        return TPTPGraphs[index].myTptpGraph.Contains(v1, v2);
+        return TPTPGraphs[index].TptpGraph.Contains(v1, v2);
     }
 
+    // merge graph id2 into graph id1
     public void MergeTPTPGraphs(int Id1, int Id2)
     {
         var index1 = TPTPGraphs.FindIndex(p => p.Id == Id1);
         var index2 = TPTPGraphs.FindIndex(p => p.Id == Id2);
 
-        TPTPGraphs[index1].myTptpGraph.ApplySynchronizedUpdate(TPTPGraphs[index2].myTptpGraph.GetLastSynchronizedUpdate());
+        TPTPGraphs[index1].TptpGraph.ApplySynchronizedUpdate(TPTPGraphs[index2].TptpGraph.GetLastSynchronizedUpdate());
     }
 
+    // merge graph msg into graph id1
     public void MergeTPTPGraphs(int Id1, MergeSharp.TPTPGraphMsg tptpgraphmsg)
     {
         var index1 = TPTPGraphs.FindIndex(p => p.Id == Id1);
 
-        TPTPGraphs[index1].myTptpGraph.ApplySynchronizedUpdate(tptpgraphmsg);
+        TPTPGraphs[index1].TptpGraph.ApplySynchronizedUpdate(tptpgraphmsg);
     }
 
     public PropagationMessage GetLastSynchronizedUpdate(int Id)
     {
         var index = TPTPGraphs.FindIndex(p => p.Id == Id);
-        return TPTPGraphs[index].myTptpGraph.GetLastSynchronizedUpdate();
+        return TPTPGraphs[index].TptpGraph.GetLastSynchronizedUpdate();
     }
 }

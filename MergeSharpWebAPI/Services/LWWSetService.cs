@@ -7,35 +7,35 @@ namespace MergeSharpWebAPI.Services;
 
 public class LWWSetService<T>
 {
-    private List<MergeSharpWebAPI.Models.LWWSet<T>> LWWSets { get; set; }
+    private List<MergeSharpWebAPI.Models.LWWSetModel<T>> LWWSets { get; set; }
 
     public LWWSetService()
     {
-        LWWSets = new List<MergeSharpWebAPI.Models.LWWSet<T>>
+        LWWSets = new List<MergeSharpWebAPI.Models.LWWSetModel<T>>
         {
-            new MergeSharpWebAPI.Models.LWWSet<T> { Id = 1, LwwSet=new MergeSharp.LWWSet<T>() },
+            new MergeSharpWebAPI.Models.LWWSetModel<T> { Id = 1, LwwSet=new MergeSharp.LWWSet<T>() },
         };
     }
 
-    public List<MergeSharpWebAPI.Models.LWWSet<T>> GetAll() => LWWSets;
+    public List<MergeSharpWebAPI.Models.LWWSetModel<T>> GetAll() => LWWSets;
 
-    public MergeSharpWebAPI.Models.LWWSet<T>? Get(int id) => LWWSets.FirstOrDefault(p => p.Id == id);
+    public MergeSharpWebAPI.Models.LWWSetModel<T>? Get(int id) => LWWSets.FirstOrDefault(p => p.Id == id);
 
-    public void Add(MergeSharpWebAPI.Models.LWWSet<T> lwwSet)
+    public void Add(MergeSharpWebAPI.Models.LWWSetModel<T> lwwSet)
     {
         LWWSets.Add(lwwSet);
     }
 
     public void Delete(int id)
     {
-        MergeSharpWebAPI.Models.LWWSet<T> lwwSet = Get(id);
+        MergeSharpWebAPI.Models.LWWSetModel<T> lwwSet = Get(id);
         if (lwwSet is null)
             return;
 
         LWWSets.Remove(lwwSet);
     }
 
-    public void Update(MergeSharpWebAPI.Models.LWWSet<T> lwwSet)
+    public void Update(MergeSharpWebAPI.Models.LWWSetModel<T> lwwSet)
     {
         var index = LWWSets.FindIndex(p => p.Id == lwwSet.Id);
         if (index == -1)

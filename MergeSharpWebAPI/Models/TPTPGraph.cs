@@ -2,9 +2,9 @@ using MergeSharp;
 
 namespace MergeSharpWebAPI.Models;
 
-public class TPTPGraph
+public class TPTPGraphModel
 {
     public int Id { get; set; }
-    public MergeSharp.TPTPGraph myTptpGraph { get; set; }
+    public MergeSharp.TPTPGraph TptpGraph { get; set; }
 
 }
