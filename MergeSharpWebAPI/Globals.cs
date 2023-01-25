@@ -27,7 +27,6 @@ public static class Globals
 
     //public static IDMapping = new Dictionary<Guid, int>() { { Guid.NewGuid(), 1}, { Guid.NewGuid(), 2 } };
 
-
     private const string propogationMessageServer = "https://serverwebapi20230125175127.azurewebsites.net/hubs/propagationmessage";
     // private const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
     // private const string propogationMessageServer = "http://localhost:5106/hubs/propagationmessage";
