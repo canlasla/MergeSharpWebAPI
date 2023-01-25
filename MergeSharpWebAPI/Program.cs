@@ -91,7 +91,23 @@ internal class Program
             //Console.WriteLine("lwwMsg.addSet:");
             //Console.WriteLine(string.Join(",", lwwMsg.addSet.Keys.ToList()));
 
+            // --- Print the received LWWSetMsg state ---
+
+            //Console.WriteLine("lwwMsg.addSet:");
+            //Console.WriteLine(string.Join(",", lwwMsg.addSet.Keys.ToList()));
+            ////Console.WriteLine(string.Join(",", lwwMsg.addSet.Values.ToList()));
+
+            //Console.WriteLine("lwwMsg.removeSet:");
+            //Console.WriteLine(string.Join(",", lwwMsg.removeSet.Keys.ToList()));
+            ////Console.WriteLine(string.Join(",", lwwMsg.removeSet.Values.ToList()));
+
+            //// --- Merge received state with current state and print the result ---
+
             //myLWWSetService.MergeLWWSets(1, lwwMsg);
+            //Console.WriteLine("LwwSet:");
+            //Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
+
+            // --- Send the updated state to the frontend ---
 
             //Declare TPTPMsg
             MergeSharp.TPTPGraphMsg tptpgraphMsg = new MergeSharp.TPTPGraphMsg();
@@ -145,7 +161,9 @@ internal class Program
             Console.WriteLine("Sending Put Request for front-end");
             var result = await client.PutAsync(
                 "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestData);
-            Console.WriteLine(result);
+            //Console.WriteLine(result);
+
+            Console.WriteLine("=====================");
         });
 
         // Start the connection
