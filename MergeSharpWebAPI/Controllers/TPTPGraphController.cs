@@ -114,6 +114,34 @@ public class TPTPGraphController : ControllerBase
         return JsonConvert.SerializeObject(myTPTPGraphService.LookupEdges(id));
     }
 
+    [HttpGet("LookupNodes/{id}")]
+    public ActionResult<string> LookupNodes(int id)
+    {
+        string [] types = { "and", "or", "not", "xor", "nand", "nor" };
+
+        var result = new List<Node>();
+
+        foreach (KeyValuePair<Guid, int> entry in IDMapping)
+        {
+            Random rnd = new Random();;
+
+            var n = new Node(types[rnd.Next(0, types.Length)], entry.Value, $"{Math.Pow(-1, rnd.Next(1,3)) * rnd.Next(0, 200)} {Math.Pow(-1, rnd.Next(1, 3)) * rnd.Next(0, 200)}");
+            result.Add(n);
+        }
+
+        result.Add(new Node("and", 6, "0 0"));
+
+        //var n1 = new Node("and", 1, "0 0");
+        //var n2 = new Node("xor", 2, "100 0");
+
+        //result.Add(n1);
+        //result.Add(n2);
+
+        //convert dictinonary into:
+        // return {category: "and", key: {from dictionary}, loc: {random x and random }}
+        return JsonConvert.SerializeObject(result);
+    }
+
     // Add a vertex to TPTP Graph
     [HttpGet("AddVertex/{id}")]
     public async Task<IActionResult> AddVertex(int id)

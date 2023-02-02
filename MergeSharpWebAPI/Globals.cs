@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+using System.Globalization;
 using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.SignalR.Client;
 
@@ -21,6 +22,12 @@ public static class Globals
 {
     public static LWWSetService<int> myLWWSetService = new LWWSetService<int>();
     public static TPTPGraphService myTPTPGraphService = new TPTPGraphService();
+    //dictionary from guids to ints
+    public static IDictionary<Guid, int> IDMapping = new Dictionary<Guid, int>();
+
+    //public static IDMapping = new Dictionary<Guid, int>() { { Guid.NewGuid(), 1}, { Guid.NewGuid(), 2 } };
+
+
     private const string propogationMessageServer = "https://serverwebapi20221114203154.azurewebsites.net/hubs/propagationmessage";
     // private const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
     // private const string propogationMessageServer = "http://localhost:5106/hubs/propagationmessage";

@@ -57,6 +57,12 @@ internal class Program
 
     private static async Task Main(string[] args)
     {
+        IDMapping.Add(Guid.NewGuid(), 1);
+        IDMapping.Add(Guid.NewGuid(), 2);
+        IDMapping.Add(Guid.NewGuid(), 3);
+        IDMapping.Add(Guid.NewGuid(), 4);
+        IDMapping.Add(Guid.NewGuid(), 5);
+
         Thread serverThread = new Thread(StartServer);
         serverThread.Start();
 
