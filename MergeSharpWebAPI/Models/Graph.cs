@@ -11,8 +11,40 @@ namespace MergeSharpWebAPI.Models;
 [TypeAntiEntropyProtocol(typeof(Graph))]
 public class GraphMsg : PropagationMessage
 {
-    public override void Decode(byte[] input) => throw new NotImplementedException();
-    public override byte[] Encode() => throw new NotImplementedException();
+    [JsonInclude]
+    public CanilleraGraphMsg cGraphMsg { get; private set; }
+
+    [JsonInclude]
+    public Dictionary<Guid, VertexInfoMsg> vertexInfoMsgs { get; private set; }
+
+    public GraphMsg()
+    {
+        this.cGraphMsg = new();
+        this.vertexInfoMsgs = new();
+    }
+
+    public GraphMsg(CanilleraGraph cGraph, Dictionary<Guid, VertexInfo> vertexInfo)
+    {
+        this.cGraphMsg = (CanilleraGraphMsg) cGraph.GetLastSynchronizedUpdate();
+        this.vertexInfoMsgs = vertexInfo.ToDictionary(kv => kv.Key, kv => (VertexInfoMsg) kv.Value.GetLastSynchronizedUpdate());
+    }
+
+    public override void Decode(byte[] input)
+    {
+        var json = JsonSerializer.Deserialize<GraphMsg>(input);
+        if (json is null)
+        {
+            return;
+        }
+
+        this.cGraphMsg = json.cGraphMsg;
+        this.vertexInfoMsgs = json.vertexInfoMsgs;
+    }
+
+    public override byte[] Encode()
+    {
+        return JsonSerializer.SerializeToUtf8Bytes(this);
+    }
 }
 
 public class Graph : CRDT
@@ -57,7 +89,8 @@ public class Graph : CRDT
     [OperationType(OpType.Update)]
     public virtual bool AddVertex(Vertex v)
     {
-        if (this.LookupVertices().Contains(v.id)) {
+        if (this.LookupVertices().Contains(v.id))
+        {
             return false;
         }
 
@@ -105,7 +138,27 @@ public class Graph : CRDT
         return this._canilleraGraph.EdgeCount(new CanilleraGraph.Edge(edge.src, edge.dst));
     }
 
-    public override PropagationMessage GetLastSynchronizedUpdate() => throw new NotImplementedException();
-    public override void ApplySynchronizedUpdate(PropagationMessage ReceivedUpdate) => throw new NotImplementedException();
-    public override PropagationMessage DecodePropagationMessage(byte[] input) => throw new NotImplementedException();
+    public override void ApplySynchronizedUpdate(PropagationMessage receivedUpdate)
+    {
+        if (receivedUpdate is not GraphMsg)
+        {
+            throw new NotSupportedException($"{System.Reflection.MethodBase.GetCurrentMethod().Name} does not support {nameof(receivedUpdate)} type of {receivedUpdate.GetType()}");
+        }
+
+        GraphMsg received = (GraphMsg) receivedUpdate;
+        this._canilleraGraph.ApplySynchronizedUpdate(received.cGraphMsg);
+        foreach (var kv in this._vertexInfo)
+        {
+            kv.Value.ApplySynchronizedUpdate(received.vertexInfoMsgs[kv.Key]);
+        }
+    }
+
+    public override PropagationMessage DecodePropagationMessage(byte[] input)
+    {
+        GraphMsg msg = new();
+        msg.Decode(input);
+        return msg;
+    }
+
+    public override PropagationMessage GetLastSynchronizedUpdate() => new GraphMsg(this._canilleraGraph, this._vertexInfo);
 }
