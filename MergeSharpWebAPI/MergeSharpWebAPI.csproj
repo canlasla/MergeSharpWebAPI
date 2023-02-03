@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.0" />
-    <PackageReference Include="subhendu.1z4r3al1.22.10.24.001.Test" Version="1.0.0" />
+    <PackageReference Include="subhendu.1z4r3al1.22.10.24.001.Test" Version="1.1.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
