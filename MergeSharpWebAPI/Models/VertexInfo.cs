@@ -53,6 +53,12 @@ public class VertexInfo : CRDT
     private readonly LWWRegister<double> _y;
     private string _type;
 
+    public VertexInfo() {
+        this._x = new();
+        this._y = new();
+        this._type = "";
+     }
+
     public VertexInfo(double x, double y, string type)
     {
         this._x = new(x);

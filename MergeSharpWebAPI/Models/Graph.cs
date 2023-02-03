@@ -147,9 +147,17 @@ public class Graph : CRDT
 
         GraphMsg received = (GraphMsg) receivedUpdate;
         this._canilleraGraph.ApplySynchronizedUpdate(received.cGraphMsg);
-        foreach (var kv in this._vertexInfo)
+        foreach (var kv in received.vertexInfoMsgs)
         {
-            kv.Value.ApplySynchronizedUpdate(received.vertexInfoMsgs[kv.Key]);
+            if (this._vertexInfo.TryGetValue(kv.Key, out VertexInfo? vInfo))
+            {
+                vInfo.ApplySynchronizedUpdate(kv.Value);
+            }
+            else
+            {
+                vInfo = new();
+                vInfo.ApplySynchronizedUpdate(kv.Value);
+            }
         }
     }
 
