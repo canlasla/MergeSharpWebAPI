@@ -1,30 +1,27 @@
-using System.Text;
 using MergeSharp;
 using MergeSharpWebAPI.Models;
-using Newtonsoft.Json;
 
 namespace MergeSharpWebAPI.Services;
 
 public class TPTPGraphService
 {
-    private List<MergeSharpWebAPI.Models.TPTPGraphModel> TPTPGraphs { get; set; }
+    private List<TPTPGraphModel> TPTPGraphs { get; set; }
 
     public TPTPGraphService()
     {
-        TPTPGraphs = new List<MergeSharpWebAPI.Models.TPTPGraphModel>
-        {
-            new MergeSharpWebAPI.Models.TPTPGraphModel { Id = 1, TptpGraph=new MergeSharp.TPTPGraph() },
+        TPTPGraphs = new List<TPTPGraphModel>{
+            new TPTPGraphModel { Id = 1, TptpGraph = new TPTPGraph() },
         };
     }
 
     //get all graphs
-    public List<MergeSharpWebAPI.Models.TPTPGraphModel> GetAll() => TPTPGraphs;
+    public List<TPTPGraphModel> GetAll() => TPTPGraphs;
 
     //get a graph
-    public MergeSharpWebAPI.Models.TPTPGraphModel? Get(int id) => TPTPGraphs.FirstOrDefault(p => p.Id == id);
+    public TPTPGraphModel? Get(int id) => TPTPGraphs.FirstOrDefault(p => p.Id == id);
 
     // add a graph
-    public void Add(MergeSharpWebAPI.Models.TPTPGraphModel tptpGraph)
+    public void Add(TPTPGraphModel tptpGraph)
     {
         TPTPGraphs.Add(tptpGraph);
     }
@@ -32,7 +29,7 @@ public class TPTPGraphService
     // remove a graph
     public void Delete(int id)
     {
-        MergeSharpWebAPI.Models.TPTPGraphModel TPTPGraph = Get(id);
+        TPTPGraphModel TPTPGraph = Get(id);
         if (TPTPGraph is null)
             return;
 

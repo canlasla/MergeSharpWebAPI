@@ -51,7 +51,7 @@ public class TPTPGraphController : ControllerBase
     //post -h Content-Type=application/json -c "<a new id here>"
     public IActionResult Create([FromBody] int id)
     {
-        myTPTPGraphService.Add(new MergeSharpWebAPI.Models.TPTPGraphModel { Id = id, TptpGraph = new MergeSharp.TPTPGraph() });
+        myTPTPGraphService.Add(new TPTPGraphModel { Id = id, TptpGraph = new TPTPGraph() });
         return CreatedAtAction(nameof(Create), new { Id = id }, myTPTPGraphService.Get(id));
     }
 
