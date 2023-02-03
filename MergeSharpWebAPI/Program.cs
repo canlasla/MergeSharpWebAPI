@@ -88,8 +88,6 @@ internal class Program
             Console.WriteLine("Message received: ", byteMsg);
             //MergeSharp.LWWSetMsg<int> lwwMsg = new();
             //lwwMsg.Decode(byteMsg);
-            //Console.WriteLine("lwwMsg.addSet:");
-            //Console.WriteLine(string.Join(",", lwwMsg.addSet.Keys.ToList()));
 
             // --- Print the received LWWSetMsg state ---
 
