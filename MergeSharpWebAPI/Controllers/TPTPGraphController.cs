@@ -130,15 +130,6 @@ public class TPTPGraphController : ControllerBase
         }
 
         result.Add(new Node("and", 6, "0 0"));
-
-        //var n1 = new Node("and", 1, "0 0");
-        //var n2 = new Node("xor", 2, "100 0");
-
-        //result.Add(n1);
-        //result.Add(n2);
-
-        //convert dictinonary into:
-        // return {category: "and", key: {from dictionary}, loc: {random x and random }}
         return JsonConvert.SerializeObject(result);
     }
 
