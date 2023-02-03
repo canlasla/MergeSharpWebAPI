@@ -155,30 +155,30 @@ internal class Program
             await connection.StartAsync();
             Console.WriteLine("Connection started");
 
-            myLWWSetService.AddElement(1, 11);
-            myLWWSetService.AddElement(1, 22);
-            myLWWSetService.AddElement(1, 33);
-            myLWWSetService.RemoveElement(1, 11);
-            myLWWSetService.RemoveElement(1, 22);
+            //myLWWSetService.AddElement(1, 11);
+            //myLWWSetService.AddElement(1, 22);
+            //myLWWSetService.AddElement(1, 33);
+            //myLWWSetService.RemoveElement(1, 11);
+            //myLWWSetService.RemoveElement(1, 22);
 
-            var byteMsg = myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode();
-            MergeSharp.LWWSetMsg<int> lwwMsg = new();
-            lwwMsg.Decode(byteMsg);
-            Console.WriteLine("addset: " + string.Join(",", lwwMsg.addSet.Keys.ToList()));
-            Console.WriteLine("removeset: " + string.Join(",", lwwMsg.removeSet.Keys.ToList()));
+            //var byteMsg = myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode();
+            //MergeSharp.LWWSetMsg<int> lwwMsg = new();
+            //lwwMsg.Decode(byteMsg);
+            //Console.WriteLine("addset: " + string.Join(",", lwwMsg.addSet.Keys.ToList()));
+            //Console.WriteLine("removeset: " + string.Join(",", lwwMsg.removeSet.Keys.ToList()));
 
 
 
-            myTPTPGraphService.AddVertex(1, Guid.NewGuid());
-            myTPTPGraphService.AddVertex(1, Guid.NewGuid());
-            myTPTPGraphService.AddVertex(1, Guid.NewGuid());
+            //myTPTPGraphService.AddVertex(1, Guid.NewGuid());
+            //myTPTPGraphService.AddVertex(1, Guid.NewGuid());
+            //myTPTPGraphService.AddVertex(1, Guid.NewGuid());
 
-            Console.WriteLine();
-            var byteMsgtptp = myTPTPGraphService.GetLastSynchronizedUpdate(1).Encode();
-            MergeSharp.TPTPGraphMsg tptpGraphMsg = new();
-            tptpGraphMsg.Decode(byteMsgtptp);
-            Console.WriteLine(string.Join(", ", myTPTPGraphService.LookupVertices(1)));
-            Console.WriteLine("Vertices from tptpgraphmsg: " + string.Join(", ", tptpGraphMsg._verticesMsg.addSet));
+            //Console.WriteLine();
+            //var byteMsgtptp = myTPTPGraphService.GetLastSynchronizedUpdate(1).Encode();
+            //MergeSharp.TPTPGraphMsg tptpGraphMsg = new();
+            //tptpGraphMsg.Decode(byteMsgtptp);
+            //Console.WriteLine(string.Join(", ", myTPTPGraphService.LookupVertices(1)));
+            //Console.WriteLine("Vertices from tptpgraphmsg: " + string.Join(", ", tptpGraphMsg._verticesMsg.addSet));
             //Console.WriteLine("Edges from tptpgraphmsg: " + string.Join(", ", tptpGraphMsg._edgesMsg.addSet));
 
 
