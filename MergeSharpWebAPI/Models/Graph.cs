@@ -77,7 +77,7 @@ public class Graph : CRDT
     }
 
     private readonly CanilleraGraph _canilleraGraph;
-    private readonly Dictionary<Guid, VertexInfo> _vertexInfo;
+    private Dictionary<Guid, VertexInfo> _vertexInfo;
 
     public Graph()
     {
@@ -147,6 +147,11 @@ public class Graph : CRDT
 
         GraphMsg received = (GraphMsg) receivedUpdate;
         this._canilleraGraph.ApplySynchronizedUpdate(received.cGraphMsg);
+
+        // _vertexInfo should contain only the vertices now in the graph
+        var currVertices = this.LookupVertices();
+        this._vertexInfo = this._vertexInfo.Where(kv => currVertices.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
+
         foreach (var kv in received.vertexInfoMsgs)
         {
             if (this._vertexInfo.TryGetValue(kv.Key, out VertexInfo? vInfo))
