@@ -60,6 +60,11 @@ internal class Program
         Thread serverThread = new Thread(StartServer);
         serverThread.Start();
 
+        // connection.WithUrl(propogationMessageServer)
+        //             .WithAutomaticReconnect()
+        //             .ConfigureLogging(signalR.LogLevel.Information)
+        //             .Build();
+
         connection.Reconnecting += error =>
         {
             System.Diagnostics.Debug.Assert(connection.State == HubConnectionState.Reconnecting);
@@ -73,6 +78,7 @@ internal class Program
         connection.Closed += async (error) =>
                     {
                         await Task.Delay(new Random().Next(0, 5) * 1000);
+                        Console.WriteLine("starting to connect to server again");
                         await connection.StartAsync();
                     };
 
