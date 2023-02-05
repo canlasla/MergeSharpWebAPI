@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using MergeSharpWebAPI.Models;
 
 namespace MergeSharpWebAPI.Hubs.Clients;
