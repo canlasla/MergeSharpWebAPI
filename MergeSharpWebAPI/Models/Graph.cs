@@ -79,6 +79,11 @@ public class Graph : CRDT
     private readonly CanilleraGraph _canilleraGraph;
     private Dictionary<Guid, VertexInfo> _vertexInfo;
 
+    public IEnumerable<Guid> Vertices => LookupVertices();
+
+    public Dictionary<Edge, int> Edges => EdgeCounts();
+
+
     public Graph()
     {
         _canilleraGraph = new();
@@ -123,12 +128,12 @@ public class Graph : CRDT
         return _canilleraGraph.RemoveEdge(new CanilleraGraph.Edge(e.src, e.dst));
     }
 
-    public IEnumerable<Guid> LookupVertices()
+    private IEnumerable<Guid> LookupVertices()
     {
         return _canilleraGraph.LookupVertices();
     }
 
-    public Dictionary<Edge, int> EdgeCounts()
+    private Dictionary<Edge, int> EdgeCounts()
     {
         return _canilleraGraph.EdgeCounts().Where(kv => kv.Value > 0).ToDictionary(kv => new Edge(kv.Key.src, kv.Key.dst), kv => kv.Value);
     }
