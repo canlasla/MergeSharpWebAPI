@@ -20,10 +20,11 @@ namespace MergeSharpWebAPI;
 
 public static class Globals
 {
-    public static LWWSetService<int> myLWWSetService = new LWWSetService<int>();
-    public static TPTPGraphService myTPTPGraphService = new TPTPGraphService();
+    public static readonly LWWSetService<int> myLWWSetService = new();
+    public static readonly TPTPGraphService myTPTPGraphService = new();
+    public static readonly GraphService myGraphService = new();
     //dictionary from guids to ints
-    public static IDictionary<Guid, int> IDMapping = new Dictionary<Guid, int>();
+    public static readonly Dictionary<Guid, int> IDMapping = new();
 
     //public static IDMapping = new Dictionary<Guid, int>() { { Guid.NewGuid(), 1}, { Guid.NewGuid(), 2 } };
 
