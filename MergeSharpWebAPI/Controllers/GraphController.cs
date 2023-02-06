@@ -28,7 +28,7 @@ public class GraphController : ControllerBase
 
     // Add a vertex to TPTP Graph
     [HttpPost("vertices")]
-    public async Task<IActionResult> AddVertex(int id, int x, int y, string type)
+    public async Task<IActionResult> AddVertex(int id, double x, double y, string type)
     {
         // TODO: can this function only take in int?
         // TODO: does the front end use decimals or ints for position

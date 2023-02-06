@@ -21,13 +21,13 @@ public class GraphService
     public readonly struct VertexInfo
     {
         [JsonInclude]
-        public readonly int x;
+        public readonly double x;
         [JsonInclude]
-        public readonly int y;
+        public readonly double y;
         [JsonInclude]
         public readonly Graph.Vertex.Type type;
 
-        public VertexInfo(int x, int y, Graph.Vertex.Type type)
+        public VertexInfo(double x, double y, Graph.Vertex.Type type)
         {
             this.x = x;
             this.y = y;
@@ -71,7 +71,7 @@ public class GraphService
     {
         if (_idToVertexMap.TryGetValue(id, out Graph.Vertex v))
         {
-            return new VertexInfo((int) v.x, (int) v.y, v.type);
+            return new VertexInfo(v.x, v.y, v.type);
         }
 
         // TODO: throw an exception
