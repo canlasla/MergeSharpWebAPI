@@ -67,14 +67,14 @@ public class Graph : CRDT
             Invalid, And, Or, Xor, Not, Nand, Nor, XNor
         }
 
-        public readonly Guid id { get; }
+        public readonly Guid guid { get; }
         public double x { get; set; }
         public double y { get; set; }
         public readonly Type type { get; }
 
-        public Vertex(Guid id, double x, double y, Type type)
+        public Vertex(Guid guid, double x, double y, Type type)
         {
-            this.id = id;
+            this.guid = guid;
             this.x = x;
             this.y = y;
             this.type = type;
@@ -94,22 +94,22 @@ public class Graph : CRDT
     [OperationType(OpType.Update)]
     public virtual bool AddVertex(Vertex v)
     {
-        if (LookupVertices().Contains(v.id))
+        if (LookupVertices().Contains(v.guid))
         {
             return false;
         }
 
-        _canilleraGraph.AddVertex(v.id);
-        _vertexInfo[v.id] = new VertexInfo(v.x, v.y, v.type);
+        _canilleraGraph.AddVertex(v.guid);
+        _vertexInfo[v.guid] = new VertexInfo(v.x, v.y, v.type);
         return true;
     }
 
     [OperationType(OpType.Update)]
     public virtual bool RemoveVertex(Vertex v)
     {
-        if (_canilleraGraph.RemoveVertex(v.id))
+        if (_canilleraGraph.RemoveVertex(v.guid))
         {
-            _ = _vertexInfo.Remove(v.id);
+            _ = _vertexInfo.Remove(v.guid);
             return true;
         }
 

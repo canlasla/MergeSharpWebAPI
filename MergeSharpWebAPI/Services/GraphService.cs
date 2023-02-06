@@ -7,123 +7,125 @@ namespace MergeSharpWebAPI.Services;
 public class GraphService
 {
     private readonly Graph _graph;
-    private readonly Dictionary<Guid, int> _vertexToIdMap;
-    private readonly Dictionary<int, Graph.Vertex> _idToVertexMap;
+    private readonly Dictionary<Guid, int> _vertexGuidToIdMap;
+    private readonly Dictionary<int, Graph.Vertex> _keyToVertexMap;
 
     public GraphService()
     {
         _graph = new();
-        _vertexToIdMap = new();
-        _idToVertexMap = new();
+        _vertexGuidToIdMap = new();
+        _keyToVertexMap = new();
     }
 
     // Json object for the frontend
     public readonly struct VertexInfo
     {
         [JsonInclude]
+        public readonly int key;
+        [JsonInclude]
         public readonly double x;
         [JsonInclude]
         public readonly double y;
         [JsonInclude]
-        public readonly Graph.Vertex.Type type;
+        public readonly string type;
 
-        public VertexInfo(double x, double y, Graph.Vertex.Type type)
+        public VertexInfo(int key, double x, double y, Graph.Vertex.Type type)
         {
+            this.key = key;
             this.x = x;
             this.y = y;
-            this.type = type;
+            this.type = type.ToString().ToLower();
         }
     }
 
-    private static Graph.Vertex.Type StringToGraphVertexType(string str)
-    {
-        return str switch
-        {
-            "and" => Graph.Vertex.Type.And,
-            "or" => Graph.Vertex.Type.Or,
-            "xor" => Graph.Vertex.Type.Xor,
-            "not" => Graph.Vertex.Type.Not,
-            "nand" => Graph.Vertex.Type.Nand,
-            "nor" => Graph.Vertex.Type.Nor,
-            "xnor" => Graph.Vertex.Type.XNor,
-            _ => Graph.Vertex.Type.Invalid,
-        };
-    }
-
     public Dictionary<(int, int), int> EdgeCounts => _graph.EdgeCounts().ToDictionary(
-                                                                kv => (_vertexToIdMap[kv.Key.src], _vertexToIdMap[kv.Key.dst]),
+                                                                kv => (_vertexGuidToIdMap[kv.Key.src], _vertexGuidToIdMap[kv.Key.dst]),
                                                                 kv => kv.Value
                                                             );
 
-    public int EdgeCount(int srcId, int dstId)
+    public int EdgeCount(int srcKey, int dstKey)
     {
-        if (_idToVertexMap.TryGetValue(srcId, out Graph.Vertex src)
-                && _idToVertexMap.TryGetValue(dstId, out Graph.Vertex dst))
+        if (_keyToVertexMap.TryGetValue(srcKey, out Graph.Vertex src)
+                && _keyToVertexMap.TryGetValue(dstKey, out Graph.Vertex dst))
         {
-            return _graph.EdgeCount(new Graph.Edge(src.id, dst.id));
+            return _graph.EdgeCount(new Graph.Edge(src.guid, dst.guid));
         }
 
         return 0;
     }
 
-    public IEnumerable<int> Vertices => _graph.LookupVertices().Select(guid => _vertexToIdMap[guid]);
-    public VertexInfo Vertex(int id)
-    {
-        if (_idToVertexMap.TryGetValue(id, out Graph.Vertex v))
+    public IEnumerable<VertexInfo> Vertices => _keyToVertexMap.Select(
+        (kv) =>
         {
-            return new VertexInfo(v.x, v.y, v.type);
+            int key = kv.Key;
+            Graph.Vertex vertex = kv.Value;
+            return new VertexInfo(key, vertex.x, vertex.y, vertex.type);
+        }
+    );
+    public VertexInfo Vertex(int key)
+    {
+        if (_keyToVertexMap.TryGetValue(key, out Graph.Vertex v))
+        {
+            return new VertexInfo(key, v.x, v.y, v.type);
         }
 
         // TODO: throw an exception
         return new VertexInfo();
     }
 
-    public bool AddVertex(int id, double x, double y, string type)
+    public bool AddVertex(int key, double x, double y, string stype)
     {
-        if (_idToVertexMap.ContainsKey(id))
+        if (_keyToVertexMap.ContainsKey(key))
         {
             return false;
         }
 
-        Guid vertexGuid = Guid.NewGuid();
-        var v = new Graph.Vertex(vertexGuid, x, y, StringToGraphVertexType(type.ToLower()));
+        if (Enum.TryParse(stype, true, out Graph.Vertex.Type type))
+        {
+            Guid vertexGuid = Guid.NewGuid();
+            var v = new Graph.Vertex(vertexGuid, x, y, type);
 
-        _vertexToIdMap.Add(v.id, id);
-        _idToVertexMap.Add(id, v);
+            _vertexGuidToIdMap.Add(v.guid, key);
+            _keyToVertexMap.Add(key, v);
 
-        return _graph.AddVertex(v);
+            return _graph.AddVertex(v);
+        }
+        else
+        {
+            return false;
+        }
     }
 
-    public bool RemoveVertex(int id)
+    public bool RemoveVertex(int key)
     {
-        if (_idToVertexMap.TryGetValue(id, out Graph.Vertex v)
+        if (_keyToVertexMap.TryGetValue(key, out Graph.Vertex v)
                 && _graph.RemoveVertex(v))
         {
-            _ = _vertexToIdMap.Remove(v.id);
-            _ = _idToVertexMap.Remove(id);
+            _ = _vertexGuidToIdMap.Remove(v.guid);
+            _ = _keyToVertexMap.Remove(key);
             return true;
         }
 
         return false;
     }
 
-    public bool AddEdge(int src, int dst)
+    public bool AddEdge(int srcKey, int dstKey)
     {
-        if (_idToVertexMap.TryGetValue(src, out Graph.Vertex v1)
-            && _idToVertexMap.TryGetValue(dst, out Graph.Vertex v2))
+        if (_keyToVertexMap.TryGetValue(srcKey, out Graph.Vertex v1)
+            && _keyToVertexMap.TryGetValue(dstKey, out Graph.Vertex v2))
         {
-            return _graph.AddEdge(new Graph.Edge(v1.id, v2.id));
+            return _graph.AddEdge(new Graph.Edge(v1.guid, v2.guid));
         }
 
         return false;
     }
 
-    public bool RemoveEdge(int src, int dst)
+    public bool RemoveEdge(int srcKey, int dstKey)
     {
-        if (_idToVertexMap.TryGetValue(src, out Graph.Vertex v1)
-            && _idToVertexMap.TryGetValue(dst, out Graph.Vertex v2))
+        if (_keyToVertexMap.TryGetValue(srcKey, out Graph.Vertex v1)
+            && _keyToVertexMap.TryGetValue(dstKey, out Graph.Vertex v2))
         {
-            return _graph.RemoveEdge(new Graph.Edge(v1.id, v2.id));
+            return _graph.RemoveEdge(new Graph.Edge(v1.guid, v2.guid));
         }
 
         return false;

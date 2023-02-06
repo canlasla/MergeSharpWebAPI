@@ -16,24 +16,21 @@ namespace MergeSharpWebAPI.Controllers;
 public class GraphController : ControllerBase
 {
     [HttpGet("vertices")]
-    public ActionResult<string> Vertices(int? id = null)
+    public ActionResult<string> Vertices(int? key = null)
     {
-        if (id == null)
+        if (key == null)
         {
             return JsonConvert.SerializeObject(myGraphService.Vertices);
         }
         // TODO: report 404 not found if myGraphService.Vertex() doesn't have the vertex
-        return JsonConvert.SerializeObject(myGraphService.Vertex((int) id));
+        return JsonConvert.SerializeObject(myGraphService.Vertex((int) key));
     }
 
     // Add a vertex to TPTP Graph
     [HttpPost("vertices")]
-    public async Task<IActionResult> AddVertex(int id, double x, double y, string type)
+    public async Task<IActionResult> AddVertex(int key, double x, double y, string type)
     {
-        // TODO: can this function only take in int?
-        // TODO: does the front end use decimals or ints for position
-        // TODO: need to do some conversion here if so
-        if (myGraphService.AddVertex(id, x, y, type))
+        if (myGraphService.AddVertex(key, x, y, type))
         {
             Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
             if (connection.State == HubConnectionState.Connected)
@@ -57,9 +54,9 @@ public class GraphController : ControllerBase
     }
 
     [HttpDelete("vertices")]
-    public async Task<IActionResult> RemoveVertex(int id)
+    public async Task<IActionResult> RemoveVertex(int key)
     {
-        if (myGraphService.RemoveVertex(id))
+        if (myGraphService.RemoveVertex(key))
         {
             Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
             if (connection.State == HubConnectionState.Connected)
@@ -78,19 +75,19 @@ public class GraphController : ControllerBase
     }
 
     [HttpGet("edges")]
-    public ActionResult<string> Edges(int? src = null, int? dst = null)
+    public ActionResult<string> Edges(int? srcKey = null, int? dstKey = null)
     {
-        if (src == null || dst == null)
+        if (srcKey == null || dstKey == null)
         {
             return JsonConvert.SerializeObject(myGraphService.EdgeCounts);
         }
-        return JsonConvert.SerializeObject(myGraphService.EdgeCount((int) src, (int) dst));
+        return JsonConvert.SerializeObject(myGraphService.EdgeCount((int) srcKey, (int) dstKey));
     }
 
     [HttpPost("edges")]
-    public async Task<IActionResult> AddEdge(int src, int dst)
+    public async Task<IActionResult> AddEdge(int srcKey, int dstKey)
     {
-        if (myGraphService.AddEdge(src, dst))
+        if (myGraphService.AddEdge(srcKey, dstKey))
         {
             Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
             if (connection.State == HubConnectionState.Connected)
@@ -110,9 +107,9 @@ public class GraphController : ControllerBase
     }
 
     [HttpDelete("edges")]
-    public async Task<IActionResult> RemoveEdge(int src, int dst)
+    public async Task<IActionResult> RemoveEdge(int srcKey, int dstKey)
     {
-        if (myGraphService.RemoveEdge(src, dst))
+        if (myGraphService.RemoveEdge(srcKey, dstKey))
         {
             Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
             if (connection.State == HubConnectionState.Connected)
