@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MergeSharpWebAPI", "MergeSharpWebAPI\MergeSharpWebAPI.csproj", "{7C0D83BE-8D3E-4C0F-9700-BBA1D27FDAAF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MergeSharpWebAPI.Tests", "MergeSharpWebAPI.Tests\MergeSharpWebAPI.Tests.csproj", "{84D9A92B-4744-4FD7-AE21-91DF09254BB8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{7C0D83BE-8D3E-4C0F-9700-BBA1D27FDAAF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C0D83BE-8D3E-4C0F-9700-BBA1D27FDAAF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C0D83BE-8D3E-4C0F-9700-BBA1D27FDAAF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84D9A92B-4744-4FD7-AE21-91DF09254BB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84D9A92B-4744-4FD7-AE21-91DF09254BB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84D9A92B-4744-4FD7-AE21-91DF09254BB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84D9A92B-4744-4FD7-AE21-91DF09254BB8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
