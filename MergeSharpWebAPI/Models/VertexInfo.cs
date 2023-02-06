@@ -13,15 +13,15 @@ public class VertexInfoMsg : PropagationMessage
     public LWWRegisterMsg<double> yMsg { get; private set; }
 
     [JsonInclude]
-    public string type { get; private set; }
+    public Graph.Vertex.Type type { get; private set; }
     public VertexInfoMsg()
     {
         xMsg = new();
         yMsg = new();
-        type = "";
+        type = Graph.Vertex.Type.Invalid;
     }
 
-    public VertexInfoMsg(LWWRegister<double> x, LWWRegister<double> y, string type)
+    public VertexInfoMsg(LWWRegister<double> x, LWWRegister<double> y, Graph.Vertex.Type type)
     {
         xMsg = (LWWRegisterMsg<double>) x.GetLastSynchronizedUpdate();
         yMsg = (LWWRegisterMsg<double>) y.GetLastSynchronizedUpdate();
@@ -50,15 +50,15 @@ public class VertexInfo : CRDT
 {
     private readonly LWWRegister<double> _x;
     private readonly LWWRegister<double> _y;
-    private string _type;
+    private Graph.Vertex.Type _type;
 
     public VertexInfo() {
         _x = new();
         _y = new();
-        _type = "";
+        _type = Graph.Vertex.Type.Invalid;
      }
 
-    public VertexInfo(double x, double y, string type)
+    public VertexInfo(double x, double y, Graph.Vertex.Type type)
     {
         _x = new(x);
         _y = new(y);
@@ -76,8 +76,9 @@ public class VertexInfo : CRDT
         _x.ApplySynchronizedUpdate(received.xMsg);
         _y.ApplySynchronizedUpdate(received.yMsg);
 
-        // the types should NEVER be different, but in case they are, implement the following merge policy:
-        _type = _type.CompareTo(received.type) > 0 ? _type : received.type;
+        // this should only occur if this._type == Graph.Vertex.Type.Invalid
+        // NOTE: Graph.Vertex.Type.Invalid is the smallest enum
+        _type = _type > received.type ? _type : received.type;
     }
     public override PropagationMessage DecodePropagationMessage(byte[] input)
     {
