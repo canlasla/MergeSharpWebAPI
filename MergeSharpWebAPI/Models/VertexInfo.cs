@@ -17,15 +17,15 @@ public class VertexInfoMsg : PropagationMessage
 
     public VertexInfoMsg()
     {
-        this.xMsg = new();
-        this.yMsg = new();
-        this.type = Graph.Vertex.Type.Invalid;
+        xMsg = new();
+        yMsg = new();
+        type = Graph.Vertex.Type.Invalid;
     }
 
     public VertexInfoMsg(LWWRegister<double> x, LWWRegister<double> y, Graph.Vertex.Type type)
     {
-        this.xMsg = (LWWRegisterMsg<double>) x.GetLastSynchronizedUpdate();
-        this.yMsg = (LWWRegisterMsg<double>) y.GetLastSynchronizedUpdate();
+        xMsg = (LWWRegisterMsg<double>) x.GetLastSynchronizedUpdate();
+        yMsg = (LWWRegisterMsg<double>) y.GetLastSynchronizedUpdate();
         this.type = type;
     }
 
@@ -60,16 +60,16 @@ public class VertexInfo : CRDT
 
     public VertexInfo()
     {
-        this._x = new();
-        this._y = new();
-        this._type = Graph.Vertex.Type.Invalid;
+        _x = new();
+        _y = new();
+        _type = Graph.Vertex.Type.Invalid;
     }
 
     public VertexInfo(double x, double y, Graph.Vertex.Type type)
     {
-        this._x = new(x);
-        this._y = new(y);
-        this._type = type;
+        _x = new(x);
+        _y = new(y);
+        _type = type;
     }
 
     public override void ApplySynchronizedUpdate(PropagationMessage receivedUpdate)
@@ -80,8 +80,8 @@ public class VertexInfo : CRDT
         }
 
         VertexInfoMsg received = (VertexInfoMsg) receivedUpdate;
-        this._x.ApplySynchronizedUpdate(received.xMsg);
-        this._y.ApplySynchronizedUpdate(received.yMsg);
+        _x.ApplySynchronizedUpdate(received.xMsg);
+        _y.ApplySynchronizedUpdate(received.yMsg);
 
         // this should only occur if this._type == Graph.Vertex.Type.Invalid
         // NOTE: Graph.Vertex.Type.Invalid is the smallest enum
@@ -94,5 +94,5 @@ public class VertexInfo : CRDT
         return msg;
     }
 
-    public override PropagationMessage GetLastSynchronizedUpdate() => new VertexInfoMsg(this._x, this._y, this._type);
+    public override PropagationMessage GetLastSynchronizedUpdate() => new VertexInfoMsg(_x, _y, _type);
 }
