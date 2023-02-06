@@ -19,6 +19,7 @@ public class LWWSetController : ControllerBase
 
     public LWWSetController(IHubContext<FrontEndHub, IFrontEndClient> hubContext)
     {
+        // NOTE: this client is the frontend
         _hubContext = hubContext;
     }
 
