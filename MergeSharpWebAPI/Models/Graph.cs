@@ -58,12 +58,16 @@ public class Graph : CRDT
 
     public struct Vertex
     {
+        public enum Type {
+            Invalid, And, Or, Xor, Not, Nand, Nor, XNor
+        }
+
         public readonly Guid guid { get; }
         public double x { get; set; }
         public double y { get; set; }
-        public readonly string type { get; }
+        public readonly Type type { get; }
 
-        public Vertex(Guid guid, double x, double y, string type)
+        public Vertex(Guid guid, double x, double y, Type type)
         {
             this.guid = guid;
             this.x = x;
