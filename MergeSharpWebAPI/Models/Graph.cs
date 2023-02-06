@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MergeSharp;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -19,14 +15,14 @@ public class GraphMsg : PropagationMessage
 
     public GraphMsg()
     {
-        this.cGraphMsg = new();
-        this.vertexInfoMsgs = new();
+        cGraphMsg = new();
+        vertexInfoMsgs = new();
     }
 
     public GraphMsg(CanilleraGraph cGraph, Dictionary<Guid, VertexInfo> vertexInfo)
     {
-        this.cGraphMsg = (CanilleraGraphMsg) cGraph.GetLastSynchronizedUpdate();
-        this.vertexInfoMsgs = vertexInfo.ToDictionary(kv => kv.Key, kv => (VertexInfoMsg) kv.Value.GetLastSynchronizedUpdate());
+        cGraphMsg = (CanilleraGraphMsg) cGraph.GetLastSynchronizedUpdate();
+        vertexInfoMsgs = vertexInfo.ToDictionary(kv => kv.Key, kv => (VertexInfoMsg) kv.Value.GetLastSynchronizedUpdate());
     }
 
     public override void Decode(byte[] input)
@@ -53,10 +49,10 @@ public class Graph : CRDT
     {
         public Guid src { get; set; }
         public Guid dst { get; set; }
-        public Edge(Guid v1, Guid v2)
+        public Edge(Guid src, Guid dst)
         {
-            this.src = v1;
-            this.dst = v2;
+            this.src = src;
+            this.dst = dst;
         }
     }
 
@@ -81,30 +77,30 @@ public class Graph : CRDT
 
     public Graph()
     {
-        this._canilleraGraph = new();
-        this._vertexInfo = new();
+        _canilleraGraph = new();
+        _vertexInfo = new();
     }
 
 
     [OperationType(OpType.Update)]
     public virtual bool AddVertex(Vertex v)
     {
-        if (this.LookupVertices().Contains(v.guid))
+        if (LookupVertices().Contains(v.guid))
         {
             return false;
         }
 
-        this._canilleraGraph.AddVertex(v.guid);
-        this._vertexInfo[v.guid] = new VertexInfo(v.x, v.y, v.type);
+        _canilleraGraph.AddVertex(v.guid);
+        _vertexInfo[v.guid] = new VertexInfo(v.x, v.y, v.type);
         return true;
     }
 
     [OperationType(OpType.Update)]
     public virtual bool RemoveVertex(Vertex v)
     {
-        if (this._canilleraGraph.RemoveVertex(v.guid))
+        if (_canilleraGraph.RemoveVertex(v.guid))
         {
-            _ = this._vertexInfo.Remove(v.guid);
+            _ = _vertexInfo.Remove(v.guid);
             return true;
         }
 
@@ -114,28 +110,28 @@ public class Graph : CRDT
     [OperationType(OpType.Update)]
     public virtual bool AddEdge(Edge e)
     {
-        return this._canilleraGraph.AddEdge(new CanilleraGraph.Edge(e.src, e.dst));
+        return _canilleraGraph.AddEdge(new CanilleraGraph.Edge(e.src, e.dst));
     }
 
     [OperationType(OpType.Update)]
     public virtual bool RemoveEdge(Edge e)
     {
-        return this._canilleraGraph.RemoveEdge(new CanilleraGraph.Edge(e.src, e.dst));
+        return _canilleraGraph.RemoveEdge(new CanilleraGraph.Edge(e.src, e.dst));
     }
 
     public IEnumerable<Guid> LookupVertices()
     {
-        return this._canilleraGraph.LookupVertices();
+        return _canilleraGraph.LookupVertices();
     }
 
     public Dictionary<Edge, int> EdgeCounts()
     {
-        return this._canilleraGraph.EdgeCounts().Where(kv => kv.Value > 0).ToDictionary(kv => new Edge(kv.Key.src, kv.Key.dst), kv => kv.Value);
+        return _canilleraGraph.EdgeCounts().Where(kv => kv.Value > 0).ToDictionary(kv => new Edge(kv.Key.src, kv.Key.dst), kv => kv.Value);
     }
 
     public int EdgeCount(Edge edge)
     {
-        return this._canilleraGraph.EdgeCount(new CanilleraGraph.Edge(edge.src, edge.dst));
+        return _canilleraGraph.EdgeCount(new CanilleraGraph.Edge(edge.src, edge.dst));
     }
 
     public override void ApplySynchronizedUpdate(PropagationMessage receivedUpdate)
@@ -146,15 +142,15 @@ public class Graph : CRDT
         }
 
         GraphMsg received = (GraphMsg) receivedUpdate;
-        this._canilleraGraph.ApplySynchronizedUpdate(received.cGraphMsg);
+        _canilleraGraph.ApplySynchronizedUpdate(received.cGraphMsg);
 
         // _vertexInfo should contain only the vertices now in the graph
-        var currVertices = this.LookupVertices();
-        this._vertexInfo = this._vertexInfo.Where(kv => currVertices.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
+        var currVertices = LookupVertices();
+        _vertexInfo = _vertexInfo.Where(kv => currVertices.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
 
         foreach (var kv in received.vertexInfoMsgs)
         {
-            if (this._vertexInfo.TryGetValue(kv.Key, out VertexInfo? vInfo))
+            if (_vertexInfo.TryGetValue(kv.Key, out VertexInfo? vInfo))
             {
                 vInfo.ApplySynchronizedUpdate(kv.Value);
             }

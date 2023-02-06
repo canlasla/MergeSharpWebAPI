@@ -16,16 +16,15 @@ public class VertexInfoMsg : PropagationMessage
     public string type { get; private set; }
     public VertexInfoMsg()
     {
-        this.xMsg = new();
-        this.yMsg = new();
-        this.type = "";
+        xMsg = new();
+        yMsg = new();
+        type = "";
     }
 
     public VertexInfoMsg(LWWRegister<double> x, LWWRegister<double> y, string type)
     {
-
-        this.xMsg = (LWWRegisterMsg<double>) x.GetLastSynchronizedUpdate();
-        this.yMsg = (LWWRegisterMsg<double>) y.GetLastSynchronizedUpdate();
+        xMsg = (LWWRegisterMsg<double>) x.GetLastSynchronizedUpdate();
+        yMsg = (LWWRegisterMsg<double>) y.GetLastSynchronizedUpdate();
         this.type = type;
     }
 
@@ -54,16 +53,16 @@ public class VertexInfo : CRDT
     private string _type;
 
     public VertexInfo() {
-        this._x = new();
-        this._y = new();
-        this._type = "";
+        _x = new();
+        _y = new();
+        _type = "";
      }
 
     public VertexInfo(double x, double y, string type)
     {
-        this._x = new(x);
-        this._y = new(y);
-        this._type = type;
+        _x = new(x);
+        _y = new(y);
+        _type = type;
     }
 
     public override void ApplySynchronizedUpdate(PropagationMessage receivedUpdate)
@@ -74,11 +73,11 @@ public class VertexInfo : CRDT
         }
 
         VertexInfoMsg received = (VertexInfoMsg) receivedUpdate;
-        this._x.ApplySynchronizedUpdate(received.xMsg);
-        this._y.ApplySynchronizedUpdate(received.yMsg);
+        _x.ApplySynchronizedUpdate(received.xMsg);
+        _y.ApplySynchronizedUpdate(received.yMsg);
 
         // the types should NEVER be different, but in case they are, implement the following merge policy:
-        this._type = this._type.CompareTo(received.type) > 0 ? this._type : received.type;
+        _type = _type.CompareTo(received.type) > 0 ? _type : received.type;
     }
     public override PropagationMessage DecodePropagationMessage(byte[] input)
     {
