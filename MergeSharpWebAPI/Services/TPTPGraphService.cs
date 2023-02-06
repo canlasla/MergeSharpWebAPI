@@ -83,7 +83,7 @@ public class TPTPGraphService
         if (index == -1)
             return null;
 
-        return TPTPGraphs[index].TptpGraph.LookupEdges();
+        return TPTPGraphs[index].TptpGraph.Edges;
     }
 
     // lookup vertices
@@ -93,7 +93,7 @@ public class TPTPGraphService
         if (index == -1)
             return null;
 
-        return TPTPGraphs[index].TptpGraph.LookupVertices();
+        return TPTPGraphs[index].TptpGraph.Vertices;
     }
 
     // check if graph contains vertex
