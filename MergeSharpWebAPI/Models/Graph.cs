@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using MergeSharp;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -49,6 +45,7 @@ public class GraphMsg : PropagationMessage
 
 public class Graph : CRDT
 {
+
     public struct Edge
     {
         public Guid src { get; set; }
@@ -62,12 +59,16 @@ public class Graph : CRDT
 
     public struct Vertex
     {
+        public enum Type {
+            Invalid, And, Or, Xor, Not, Nand, Nor, XNor
+        }
+
         public readonly Guid id { get; }
         public double x { get; set; }
         public double y { get; set; }
-        public readonly string type { get; }
+        public readonly Type type { get; }
 
-        public Vertex(Guid id, double x, double y, string type)
+        public Vertex(Guid id, double x, double y, Type type)
         {
             this.id = id;
             this.x = x;
