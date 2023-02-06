@@ -127,6 +127,7 @@ public class LWWSetController : ControllerBase
 
         Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
         Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(id)));
+        Console.WriteLine(connection.State);
         if (connection.State == HubConnectionState.Connected)
         {
             await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
@@ -146,6 +147,7 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(id)));
+        Console.WriteLine(connection.State);
         if (connection.State == HubConnectionState.Connected)
         {
             await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());

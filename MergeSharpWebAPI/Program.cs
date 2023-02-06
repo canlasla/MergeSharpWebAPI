@@ -60,18 +60,16 @@ internal class Program
         Thread serverThread = new Thread(StartServer);
         serverThread.Start();
 
-        // connection.WithUrl(propogationMessageServer)
-        //             .WithAutomaticReconnect()
-        //             .ConfigureLogging(signalR.LogLevel.Information)
-        //             .Build();
+        // connection.ServerTimeout = TimeSpan.FromSeconds(5000);
 
         connection.Reconnecting += error =>
         {
             System.Diagnostics.Debug.Assert(connection.State == HubConnectionState.Reconnecting);
-
+            Console.WriteLine("trying to reconnect here, queue");
             // Notify users the connection was lost and the client is reconnecting.
             // Start queuing or dropping messages.
-
+            // var result = await client.PutAsync(
+            //     "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestData);
             return Task.CompletedTask;
         };
 
@@ -79,8 +77,10 @@ internal class Program
                     {
                         await Task.Delay(new Random().Next(0, 5) * 1000);
                         Console.WriteLine("starting to connect to server again");
+
                         await connection.StartAsync();
                     };
+
 
         // Define behaviour on events from server
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
