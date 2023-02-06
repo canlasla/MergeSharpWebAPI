@@ -25,6 +25,7 @@ public class LWWSetController : ControllerBase
     [HttpPut("SendLWWSetToFrontEnd")]
     public async Task<ActionResult> SendMessage([FromBody] MergeSharpWebAPI.Models.LWWSetModel<int> message)
     {
+        // NOTE: this client is the frontend
         await _hubContext.Clients.All.ReceiveMessage(message);
         return NoContent();
     }

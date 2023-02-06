@@ -25,6 +25,7 @@ public class TPTPGraphController : ControllerBase
     [HttpPut("SendTPTPGraphToFrontEnd")]
     public async Task<ActionResult> SendMessage([FromBody] MergeSharpWebAPI.Models.TPTPGraphModel message)
     {
+        // TODO: change the message to JSON for frontend
         await _hubContext.Clients.All.ReceiveMessage(message);
         return NoContent();
     }
