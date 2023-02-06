@@ -38,7 +38,7 @@ public class GraphService
         }
     }
 
-    public Dictionary<(int, int), int> EdgeCounts => _graph.EdgeCounts().ToDictionary(
+    public Dictionary<(int, int), int> EdgeCounts => _graph.Edges.ToDictionary(
                                                                 kv => (_vertexGuidToKeyMap[kv.Key.src], _vertexGuidToKeyMap[kv.Key.dst]),
                                                                 kv => kv.Value
                                                             );
