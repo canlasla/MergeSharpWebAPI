@@ -18,7 +18,7 @@ public class GraphService
     }
 
     // Json object for the frontend
-    public struct VertexInfo
+    public readonly struct VertexInfo
     {
         [JsonInclude]
         public readonly int x;
@@ -50,19 +50,44 @@ public class GraphService
         };
     }
 
-    public Dictionary<(int, int), int> EdgeCounts => _graph.EdgeCounts().ToDictionary(kv => (_vertexToIdMap[kv.Key.src], _vertexToIdMap[kv.Key.dst]), kv => kv.Value);
+    public Dictionary<(int, int), int> EdgeCounts => _graph.EdgeCounts().ToDictionary(
+                                                                kv => (_vertexToIdMap[kv.Key.src], _vertexToIdMap[kv.Key.dst]),
+                                                                kv => kv.Value
+                                                            );
 
-    public IEnumerable<int> Vertices() => _graph.LookupVertices().Select(guid => _vertexToIdMap[guid]);
-    public VertexInfo Vertices(int id)
+    public int EdgeCount(int srcId, int dstId)
     {
-        Graph.Vertex v = _idToVertexMap[id];
-        return new VertexInfo((int) v.x, (int) v.y, v.type);
+        if (_idToVertexMap.TryGetValue(srcId, out Graph.Vertex src)
+                && _idToVertexMap.TryGetValue(dstId, out Graph.Vertex dst))
+        {
+            return _graph.EdgeCount(new Graph.Edge(src.id, dst.id));
+        }
+
+        return 0;
+    }
+
+    public IEnumerable<int> Vertices => _graph.LookupVertices().Select(guid => _vertexToIdMap[guid]);
+    public VertexInfo Vertex(int id)
+    {
+        if (_idToVertexMap.TryGetValue(id, out Graph.Vertex v))
+        {
+            return new VertexInfo((int) v.x, (int) v.y, v.type);
+        }
+
+        // TODO: throw an exception
+        return new VertexInfo();
     }
 
     public bool AddVertex(int id, double x, double y, string type)
     {
+        if (_idToVertexMap.ContainsKey(id))
+        {
+            return false;
+        }
+
         Guid vertexGuid = Guid.NewGuid();
         var v = new Graph.Vertex(vertexGuid, x, y, StringToGraphVertexType(type.ToLower()));
+
         _vertexToIdMap.Add(v.id, id);
         _idToVertexMap.Add(id, v);
 
@@ -71,22 +96,21 @@ public class GraphService
 
     public bool RemoveVertex(int id)
     {
-        Graph.Vertex v = _idToVertexMap[id];
-
-        if (_graph.RemoveVertex(v))
+        if (_idToVertexMap.TryGetValue(id, out Graph.Vertex v)
+                && _graph.RemoveVertex(v))
         {
-            _vertexToIdMap.Remove(v.id);
-            _idToVertexMap.Remove(id);
+            _ = _vertexToIdMap.Remove(v.id);
+            _ = _idToVertexMap.Remove(id);
             return true;
         }
 
         return false;
     }
 
-    public bool AddEdge(int id1, int id2)
+    public bool AddEdge(int src, int dst)
     {
-        if (_idToVertexMap.TryGetValue(id1, out Graph.Vertex v1)
-            && _idToVertexMap.TryGetValue(id2, out Graph.Vertex v2))
+        if (_idToVertexMap.TryGetValue(src, out Graph.Vertex v1)
+            && _idToVertexMap.TryGetValue(dst, out Graph.Vertex v2))
         {
             return _graph.AddEdge(new Graph.Edge(v1.id, v2.id));
         }
@@ -94,10 +118,10 @@ public class GraphService
         return false;
     }
 
-    public bool RemoveEdge(int id1, int id2)
+    public bool RemoveEdge(int src, int dst)
     {
-        if (_idToVertexMap.TryGetValue(id1, out Graph.Vertex v1)
-            && _idToVertexMap.TryGetValue(id2, out Graph.Vertex v2))
+        if (_idToVertexMap.TryGetValue(src, out Graph.Vertex v1)
+            && _idToVertexMap.TryGetValue(dst, out Graph.Vertex v2))
         {
             return _graph.RemoveEdge(new Graph.Edge(v1.id, v2.id));
         }
