@@ -62,14 +62,14 @@ public class Graph : CRDT
 
     public struct Vertex
     {
-        public readonly Guid id { get; }
+        public readonly Guid guid { get; }
         public double x { get; set; }
         public double y { get; set; }
         public readonly string type { get; }
 
-        public Vertex(Guid id, double x, double y, string type)
+        public Vertex(Guid guid, double x, double y, string type)
         {
-            this.id = id;
+            this.guid = guid;
             this.x = x;
             this.y = y;
             this.type = type;
@@ -89,22 +89,22 @@ public class Graph : CRDT
     [OperationType(OpType.Update)]
     public virtual bool AddVertex(Vertex v)
     {
-        if (this.LookupVertices().Contains(v.id))
+        if (this.LookupVertices().Contains(v.guid))
         {
             return false;
         }
 
-        this._canilleraGraph.AddVertex(v.id);
-        this._vertexInfo[v.id] = new VertexInfo(v.x, v.y, v.type);
+        this._canilleraGraph.AddVertex(v.guid);
+        this._vertexInfo[v.guid] = new VertexInfo(v.x, v.y, v.type);
         return true;
     }
 
     [OperationType(OpType.Update)]
     public virtual bool RemoveVertex(Vertex v)
     {
-        if (this._canilleraGraph.RemoveVertex(v.id))
+        if (this._canilleraGraph.RemoveVertex(v.guid))
         {
-            _ = this._vertexInfo.Remove(v.id);
+            _ = this._vertexInfo.Remove(v.guid);
             return true;
         }
 
