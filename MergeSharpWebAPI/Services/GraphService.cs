@@ -82,18 +82,25 @@ public class GraphService
 
         if (Enum.TryParse(stype, true, out Graph.Vertex.Type type))
         {
-            Guid vertexGuid = Guid.NewGuid();
-            var v = new Graph.Vertex(vertexGuid, x, y, type);
+            int retries = 3; // arbitrary amount of retries
 
-            _vertexGuidToKeyMap.Add(v.guid, key);
-            _keyToVertexMap.Add(key, v);
+            while (retries > 0)
+            {
+                Guid vertexGuid = Guid.NewGuid();
+                var v = new Graph.Vertex(vertexGuid, x, y, type);
 
-            return _graph.AddVertex(v);
+                if (_graph.AddVertex(v)) // fails if vertexGuid is non-unique (very small probability)
+                {
+                    _vertexGuidToKeyMap.Add(v.guid, key);
+                    _keyToVertexMap.Add(key, v);
+                    return true;
+                }
+
+                retries--;
+            }
         }
-        else
-        {
-            return false;
-        }
+
+        return false;
     }
 
     public bool RemoveVertex(int key)
