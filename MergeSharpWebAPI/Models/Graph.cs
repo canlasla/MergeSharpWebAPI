@@ -45,6 +45,9 @@ public class GraphMsg : PropagationMessage
 
 public class Graph : CRDT
 {
+    // TODO: rethink how to organize the Graph class
+    // should the Edge and Vertex be in the Graph?
+    // Why is the VertexInfo not in the Graph? Why is it not in the Vertex?
     public struct Edge
     {
         public Guid src { get; set; }
@@ -58,7 +61,8 @@ public class Graph : CRDT
 
     public struct Vertex
     {
-        public enum Type {
+        public enum Type
+        {
             Invalid, And, Or, Xor, Not, Nand, Nor, XNor
         }
 
