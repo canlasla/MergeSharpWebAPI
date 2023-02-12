@@ -150,6 +150,8 @@ public class GraphService
         // encodedMsg may be of wrong type or the message may have been messed up in transit
         // TODO: or catch the NotSupportedException
         _graph.ApplySynchronizedUpdate(decodedMsg);
+
+        // TODO: update _keyToVertexMap and _vertexGuidToKeyMap
     }
 
     // return the encoded message because the caller should not know anything about Graph
