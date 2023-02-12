@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using static MergeSharpWebAPI.Globals;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace MergeSharpWebAPI.Controllers;
 
@@ -16,20 +17,24 @@ namespace MergeSharpWebAPI.Controllers;
 public class GraphController : ControllerBase
 {
     [HttpGet("vertices")]
-    public ActionResult<string> Vertices(int? key = null)
+    public ActionResult<string> Vertices([FromQuery] int? key = null)
     {
         if (key == null)
         {
             return JsonConvert.SerializeObject(myGraphService.Vertices);
         }
-        // TODO: report 404 not found if myGraphService.Vertex() doesn't have the vertex
         return JsonConvert.SerializeObject(myGraphService.Vertex((int) key));
     }
 
     // Add a vertex to TPTP Graph
     [HttpPost("vertices")]
-    public async Task<IActionResult> AddVertex(int key, double x, double y, string type)
+    public async Task<IActionResult> AddVertex([BindRequired, FromQuery] int key, [BindRequired, FromQuery] double x, [BindRequired, FromQuery] double y, [BindRequired, FromQuery] string type)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         if (myGraphService.AddVertex(key, x, y, type))
         {
             Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
@@ -50,12 +55,16 @@ public class GraphController : ControllerBase
             // TODO: return something related to the AddVertex success or failure above
             return NoContent();
         }
-
     }
 
     [HttpDelete("vertices")]
-    public async Task<IActionResult> RemoveVertex(int key)
+    public async Task<IActionResult> RemoveVertex([BindRequired, FromQuery] int key)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         if (myGraphService.RemoveVertex(key))
         {
             Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
@@ -75,18 +84,28 @@ public class GraphController : ControllerBase
     }
 
     [HttpGet("edges")]
-    public ActionResult<string> Edges(int? srcKey = null, int? dstKey = null)
+    public ActionResult<string> Edges([FromQuery] int? srcKey, [FromQuery] int? dstKey)
     {
-        if (srcKey == null || dstKey == null)
+        if (srcKey == null && dstKey == null)
         {
             return JsonConvert.SerializeObject(myGraphService.EdgeCounts);
         }
-        return JsonConvert.SerializeObject(myGraphService.EdgeCount((int) srcKey, (int) dstKey));
+        else if (srcKey != null && dstKey != null)
+        {
+            return JsonConvert.SerializeObject(myGraphService.EdgeCount((int) srcKey, (int) dstKey));
+        }
+
+        return BadRequest();
     }
 
     [HttpPost("edges")]
-    public async Task<IActionResult> AddEdge(int srcKey, int dstKey)
+    public async Task<IActionResult> AddEdge([BindRequired, FromQuery] int srcKey, [BindRequired, FromQuery] int dstKey)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         if (myGraphService.AddEdge(srcKey, dstKey))
         {
             Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
@@ -107,8 +126,13 @@ public class GraphController : ControllerBase
     }
 
     [HttpDelete("edges")]
-    public async Task<IActionResult> RemoveEdge(int srcKey, int dstKey)
+    public async Task<IActionResult> RemoveEdge([BindRequired, FromQuery] int srcKey, [BindRequired, FromQuery] int dstKey)
     {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
         if (myGraphService.RemoveEdge(srcKey, dstKey))
         {
             Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
