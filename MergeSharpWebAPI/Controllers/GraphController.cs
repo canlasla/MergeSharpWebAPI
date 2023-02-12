@@ -1,7 +1,5 @@
 using MergeSharpWebAPI.Hubs;
-using MergeSharpWebAPI.Hubs.Clients;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
 using static MergeSharpWebAPI.Globals;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -12,8 +10,11 @@ namespace MergeSharpWebAPI.Controllers;
 
 // https://stackoverflow.com/questions/12072277/reading-fromuri-and-frombody-at-the-same-time
 // https://www.strathweb.com/2013/04/asp-net-web-api-parameter-binding-part-1-understanding-binding-from-uri/
+
+// Error response codes follow:
+// https://www.restapitutorial.com/lessons/httpmethods.html
 [ApiController]
-[Route("[controller]")]
+[Route("graph")]
 public class GraphController : ControllerBase
 {
     [HttpGet("vertices")]
@@ -23,7 +24,15 @@ public class GraphController : ControllerBase
         {
             return JsonConvert.SerializeObject(myGraphService.Vertices);
         }
-        return JsonConvert.SerializeObject(myGraphService.Vertex((int) key));
+
+        try
+        {
+            return JsonConvert.SerializeObject(myGraphService.Vertex((int) key));
+        }
+        catch
+        {
+            return NotFound();
+        }
     }
 
     // Add a vertex to TPTP Graph
@@ -44,16 +53,11 @@ public class GraphController : ControllerBase
             }
             Console.WriteLine("Raised AddVertex event on all clients");
 
-            // TODO: return something related to the AddVertex success or failure above
-            // https://www.restapitutorial.com/lessons/httpmethods.html
-            // https://stackoverflow.com/questions/23892341/how-can-i-code-a-created-201-response-using-ihttpactionresult
-            // this.CreatedAtRoute()
-            return NoContent();
+            return Ok();
         }
         else
         {
-            // TODO: return something related to the AddVertex success or failure above
-            return NoContent();
+            return Conflict();
         }
     }
 
@@ -73,14 +77,13 @@ public class GraphController : ControllerBase
                 await connection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
             }
             Console.WriteLine("Raised RemoveVertex event on all clients");
+
+            return Ok();
         }
         else
         {
-
+            return NotFound();
         }
-
-        // TODO: return something related to the RemoveVertex success or failure above
-        return NoContent();
     }
 
     [HttpGet("edges")]
@@ -92,7 +95,14 @@ public class GraphController : ControllerBase
         }
         else if (srcKey != null && dstKey != null)
         {
-            return JsonConvert.SerializeObject(myGraphService.EdgeCount((int) srcKey, (int) dstKey));
+            try
+            {
+                return JsonConvert.SerializeObject(myGraphService.EdgeCount((int) srcKey, (int) dstKey));
+            }
+            catch
+            {
+                return NotFound();
+            }
         }
 
         return BadRequest();
@@ -115,13 +125,11 @@ public class GraphController : ControllerBase
             }
             Console.WriteLine("Raised AddEdge event on all clients");
 
-            // TODO: return something related to the AddEdge success or failure above
-            return NoContent();
+            return Ok();
         }
         else
         {
-            // TODO: return something related to the AddEdge success or failure above
-            return NoContent();
+            return NotFound();
         }
     }
 
@@ -142,13 +150,11 @@ public class GraphController : ControllerBase
             }
             Console.WriteLine("Raised RemoveEdge event on all clients");
 
-            // TODO: return something related to the RemoveEdge success or failure above
-            return NoContent();
+            return Ok();
         }
         else
         {
-            // TODO: return something related to the RemoveEdge success or failure above
-            return NoContent();
+            return NotFound();
         }
     }
 }

@@ -51,7 +51,7 @@ public class GraphService
             return _graph.EdgeCount(new Graph.Edge(src.guid, dst.guid));
         }
 
-        return 0;
+        throw new KeyNotFoundException();
     }
 
     public IEnumerable<VertexInfo> Vertices => _keyToVertexMap.Select(
@@ -69,8 +69,7 @@ public class GraphService
             return new VertexInfo(key, v.x, v.y, v.type);
         }
 
-        // TODO: throw an exception
-        return new VertexInfo();
+        throw new KeyNotFoundException();
     }
 
     public bool AddVertex(int key, double x, double y, string stype)
