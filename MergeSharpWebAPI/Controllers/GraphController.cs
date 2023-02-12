@@ -35,7 +35,6 @@ public class GraphController : ControllerBase
         }
     }
 
-    // Add a vertex to TPTP Graph
     [HttpPost("vertices")]
     public async Task<IActionResult> AddVertex([BindRequired, FromQuery] int key, [BindRequired, FromQuery] double x, [BindRequired, FromQuery] double y, [BindRequired, FromQuery] string type)
     {
