@@ -63,15 +63,12 @@ internal class Program
         Thread serverThread = new Thread(StartServer);
         serverThread.Start();
 
-        // connection.ServerTimeout = TimeSpan.FromSeconds(5000);
-
         connection.Reconnecting += error =>
         {
             System.Diagnostics.Debug.Assert(connection.State == HubConnectionState.Reconnecting);
             // Notify users the connection was lost and the client is reconnecting.
             // Start queuing or dropping messages.
-            // var result = await client.PutAsync(
-            //     "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestData);
+
             return Task.CompletedTask;
         };
 
@@ -82,9 +79,7 @@ internal class Program
                 Console.WriteLine("RECONNECTED");
                 await Task.Delay(new Random().Next(0, 5) * 1000);
                 await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
-                // Console.WriteLine("SENT?");
             }
-            // return Task.CompletedTask;
         };
 
         connection.Closed += async (error) =>
@@ -113,9 +108,6 @@ internal class Program
             var serializedLwwSet = JsonConvert.SerializeObject(myLWWSetService.Get(1));
 
             var requestData = new StringContent(serializedLwwSet, Encoding.UTF8, "application/json");
-            //string myContent = await requestData.ReadAsStringAsync();
-            //Console.WriteLine("im porinting data");
-            //Console.WriteLine(myContent);
 
             Console.WriteLine("Sending Put Request for front-end");
             var result = await client.PutAsync(
@@ -131,13 +123,13 @@ internal class Program
             {
                 await connection.StartAsync();
                 Console.WriteLine("Connection started");
+                await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error occured when connecting to server:");
                 Console.WriteLine(ex.Message);
                 Console.WriteLine(connection.State);
-                // await connection.StartAsync();
                 await Task.Delay(5000);
             }
         }
