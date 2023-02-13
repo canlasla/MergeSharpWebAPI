@@ -19,10 +19,7 @@ internal class Program
         // Add services to the container.
 
         _ = builder.Services.AddControllers();
-        _ = builder.Services.AddSignalR(options =>
-        {
-            options.ClientTimeoutInterval = TimeSpan.FromSeconds(1);
-        });
+        _ = builder.Services.AddSignalR();
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         _ = builder.Services.AddEndpointsApiExplorer();
@@ -58,20 +55,8 @@ internal class Program
         app.Run();
     }
 
-    private static async Task Main(string[] args)
+    private static void connectionReconnected()
     {
-        Thread serverThread = new Thread(StartServer);
-        serverThread.Start();
-
-        connection.Reconnecting += error =>
-        {
-            System.Diagnostics.Debug.Assert(connection.State == HubConnectionState.Reconnecting);
-            // Notify users the connection was lost and the client is reconnecting.
-            // Start queuing or dropping messages.
-
-            return Task.CompletedTask;
-        };
-
         connection.Reconnected += async connectionId =>
         {
             if (connection.State == HubConnectionState.Connected)
@@ -81,7 +66,10 @@ internal class Program
                 await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
             }
         };
+    }
 
+    private static void connectionClosed()
+    {
         connection.Closed += async (error) =>
                     {
                         await Task.Delay(new Random().Next(0, 5) * 1000);
@@ -89,9 +77,10 @@ internal class Program
 
                         await connection.StartAsync();
                     };
+    }
 
-
-        // Define behaviour on events from server
+    private static void connectionOnReceiveEncodeMessage()
+    {
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
             MergeSharp.LWWSetMsg<int> lwwMsg = new();
@@ -114,9 +103,11 @@ internal class Program
                 "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestData);
             Console.WriteLine(result);
         });
+    }
 
+    private static async void connectionStart()
+    {
         // Start the connection
-
         while (connection.State == HubConnectionState.Disconnected)
         {
             try
@@ -133,5 +124,19 @@ internal class Program
                 await Task.Delay(5000);
             }
         }
+    }
+    private static void Main(string[] args)
+    {
+        Thread serverThread = new Thread(StartServer);
+        serverThread.Start();
+
+        connectionReconnected();
+
+        connectionClosed();
+
+        connectionOnReceiveEncodeMessage();
+
+        connectionStart();
+
     }
 }
