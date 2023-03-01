@@ -16,6 +16,7 @@ using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.SignalR.Client;
 
 namespace MergeSharpWebAPI.ServerConnection;
+
 public static class Globals
 {
     public static LWWSetService<int> myLWWSetService = new LWWSetService<int>();

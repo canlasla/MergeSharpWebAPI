@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.SignalR.Client;
-namespace MergeSharpWebAPI;
+
+namespace MergeSharpWebAPI.ServerConnection;
+
 public class RetryPolicy : IRetryPolicy
 {
     public TimeSpan? NextRetryDelay(RetryContext retryContext)
