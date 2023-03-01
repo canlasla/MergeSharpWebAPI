@@ -1,12 +1,8 @@
 using MergeSharpWebAPI.Hubs;
-using MergeSharpWebAPI.Services;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
-using static MergeSharpWebAPI.Globals;
-using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.Text;
-using MergeSharpWebAPI.Models;
+using static MergeSharpWebAPI.ServerConnection.Globals;
 
 internal class Program
 {
@@ -55,7 +51,7 @@ internal class Program
         app.Run();
     }
 
-    private static void connectionReconnected()
+    private static void ConfigureConnectionReconnected()
     {
         connection.Reconnected += async connectionId =>
         {
@@ -63,12 +59,12 @@ internal class Program
             {
                 Console.WriteLine("RECONNECTED");
                 await Task.Delay(new Random().Next(0, 5) * 1000);
-                await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+                await connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
             }
         };
     }
 
-    private static void connectionClosed()
+    private static void ConfigureConnectionClosed()
     {
         connection.Closed += async (error) =>
                     {
@@ -79,7 +75,7 @@ internal class Program
                     };
     }
 
-    private static void connectionOnReceiveEncodeMessage()
+    private static void ConfigureConnectionOnReceiveEncodeMessage()
     {
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
@@ -94,18 +90,20 @@ internal class Program
             using HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
 
-            var serializedLwwSet = JsonConvert.SerializeObject(myLWWSetService.Get(1));
+            var frontEndLwwSetJson = JsonConvert.SerializeObject(myLWWSetService.Get(1));
 
-            var requestData = new StringContent(serializedLwwSet, Encoding.UTF8, "application/json");
+            var requestData = new StringContent(frontEndLwwSetJson, Encoding.UTF8, "application/json");
 
             Console.WriteLine("Sending Put Request for front-end");
             var result = await client.PutAsync(
                 "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestData);
             Console.WriteLine(result);
+
+            // TODO: check this result for errors
         });
     }
 
-    private static async void connectionStart()
+    private static async void ConnectToServer()
     {
         // Start the connection
         while (connection.State == HubConnectionState.Disconnected)
@@ -114,7 +112,7 @@ internal class Program
             {
                 await connection.StartAsync();
                 Console.WriteLine("Connection started");
-                await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+                await connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
             }
             catch (Exception ex)
             {
@@ -127,16 +125,16 @@ internal class Program
     }
     private static void Main(string[] args)
     {
-        Thread serverThread = new Thread(StartServer);
-        serverThread.Start();
+        Thread CRDTEndpoints = new Thread(StartServer);
+        CRDTEndpoints.Start();
 
-        connectionReconnected();
+        ConfigureConnectionReconnected();
 
-        connectionClosed();
+        ConfigureConnectionClosed();
 
-        connectionOnReceiveEncodeMessage();
+        ConfigureConnectionOnReceiveEncodeMessage();
 
-        connectionStart();
+        ConnectToServer();
 
     }
 }

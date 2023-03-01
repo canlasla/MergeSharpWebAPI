@@ -14,19 +14,17 @@
 
 using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.SignalR.Client;
-using Microsoft.AspNetCore.SignalR;
 
-namespace MergeSharpWebAPI;
-
+namespace MergeSharpWebAPI.ServerConnection;
 public static class Globals
 {
     public static LWWSetService<int> myLWWSetService = new LWWSetService<int>();
-    private const string propogationMessageServer = "https://serverwebapi20230125175127.azurewebsites.net/hubs/propagationmessage";
-    // private const string propogationMessageServer = "https://localhost:7106/hubs/propagationmessage";
-    // private const string propogationMessageServer = "http://localhost:5106/hubs/propagationmessage";
+    private const string serverConnection = "https://serverwebapi20230125175127.azurewebsites.net/hubs/propagationmessage";
+    // private const string serverConnection = "https://localhost:7106/hubs/propagationmessage";
+    // private const string serverConnection = "http://localhost:5106/hubs/propagationmessage";
 
     public static HubConnection connection = new HubConnectionBuilder()
-                    .WithUrl(propogationMessageServer)
+                    .WithUrl(serverConnection)
                     .WithAutomaticReconnect(new RetryPolicy())
                     .Build();
 }
