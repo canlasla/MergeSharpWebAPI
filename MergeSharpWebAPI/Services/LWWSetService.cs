@@ -1,41 +1,40 @@
-using System.Text;
 using MergeSharp;
 using MergeSharpWebAPI.Models;
-using Newtonsoft.Json;
+
 
 namespace MergeSharpWebAPI.Services;
 
 public class LWWSetService<T>
 {
-    private List<MergeSharpWebAPI.Models.LWWSet<T>> LWWSets { get; set; }
+    private List<LWWSetModel<T>> LWWSets { get; set; }
 
     public LWWSetService()
     {
-        LWWSets = new List<MergeSharpWebAPI.Models.LWWSet<T>>
+        LWWSets = new List<LWWSetModel<T>>
         {
-            new MergeSharpWebAPI.Models.LWWSet<T> { Id = 1, LwwSet=new MergeSharp.LWWSet<T>() },
+            new LWWSetModel<T> { Id = 1, LwwSet=new MergeSharp.LWWSet<T>() },
         };
     }
 
-    public List<MergeSharpWebAPI.Models.LWWSet<T>> GetAll() => LWWSets;
+    public List<LWWSetModel<T>> GetAll() => LWWSets;
 
-    public MergeSharpWebAPI.Models.LWWSet<T>? Get(int id) => LWWSets.FirstOrDefault(p => p.Id == id);
+    public LWWSetModel<T>? Get(int id) => LWWSets.FirstOrDefault(p => p.Id == id);
 
-    public void Add(MergeSharpWebAPI.Models.LWWSet<T> lwwSet)
+    public void Add(LWWSetModel<T> lwwSet)
     {
         LWWSets.Add(lwwSet);
     }
 
     public void Delete(int id)
     {
-        MergeSharpWebAPI.Models.LWWSet<T> lwwSet = Get(id);
+        LWWSetModel<T> lwwSet = Get(id);
         if (lwwSet is null)
             return;
 
         LWWSets.Remove(lwwSet);
     }
 
-    public void Update(MergeSharpWebAPI.Models.LWWSet<T> lwwSet)
+    public void Update(LWWSetModel<T> lwwSet)
     {
         var index = LWWSets.FindIndex(p => p.Id == lwwSet.Id);
         if (index == -1)
@@ -93,7 +92,7 @@ public class LWWSetService<T>
         LWWSets[index1].LwwSet.ApplySynchronizedUpdate(LWWSets[index2].LwwSet.GetLastSynchronizedUpdate());
     }
 
-    public void MergeLWWSets(int Id1, MergeSharp.LWWSetMsg<T> lwwsetmsg)
+    public void MergeLWWSets(int Id1, LWWSetMsg<T> lwwsetmsg)
     {
         var index1 = LWWSets.FindIndex(p => p.Id == Id1);
 

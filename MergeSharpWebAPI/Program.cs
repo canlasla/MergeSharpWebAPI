@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR.Client;
 using Newtonsoft.Json;
 using System.Text;
 using static MergeSharpWebAPI.ServerConnection.Globals;
+using MergeSharpWebAPI.Models;
 
 internal class Program
 {
@@ -59,7 +60,7 @@ internal class Program
             {
                 Console.WriteLine("RECONNECTED");
                 // wait some random amount for case when multiple clients are coming back online at same time
-                // want to stagger the SendEncodedMessage call. If SendEncodedMessage sent at same time, 
+                // want to stagger the SendEncodedMessage call. If SendEncodedMessage sent at same time,
                 // one of them will get lost
                 await Task.Delay(new Random().Next(0, 5) * 1000);
                 await connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
@@ -82,14 +83,67 @@ internal class Program
     {
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
-            MergeSharp.LWWSetMsg<int> lwwMsg = new();
-            lwwMsg.Decode(byteMsg);
+            Console.WriteLine("Message received: ", byteMsg);
+            //MergeSharp.LWWSetMsg<int> lwwMsg = new();
+            //lwwMsg.Decode(byteMsg);
 
-            Console.WriteLine("lwwMsg.addSet:");
-            Console.WriteLine(string.Join(",", lwwMsg.addSet.Keys.ToList()));
+            // --- Print the received LWWSetMsg state ---
 
-            myLWWSetService.MergeLWWSets(1, lwwMsg);
+            //Console.WriteLine("lwwMsg.addSet:");
+            //Console.WriteLine(string.Join(",", lwwMsg.addSet.Keys.ToList()));
+            ////Console.WriteLine(string.Join(",", lwwMsg.addSet.Values.ToList()));
 
+            //Console.WriteLine("lwwMsg.removeSet:");
+            //Console.WriteLine(string.Join(",", lwwMsg.removeSet.Keys.ToList()));
+            ////Console.WriteLine(string.Join(",", lwwMsg.removeSet.Values.ToList()));
+
+            //// --- Merge received state with current state and print the result ---
+
+            //myLWWSetService.MergeLWWSets(1, lwwMsg);
+            //Console.WriteLine("LwwSet:");
+            //Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
+
+            // --- Send the updated state to the frontend ---
+
+            //Declare TPTPMsg
+            MergeSharp.TPTPGraphMsg tptpgraphMsg = new MergeSharp.TPTPGraphMsg();
+
+            //initialize TPTPMsg with decoded received bytemsg
+            tptpgraphMsg.Decode(byteMsg);
+
+            //merge TPTPMsg with local TPTPGraph
+            myTPTPGraphService.MergeTPTPGraphs(1, tptpgraphMsg);
+
+            Console.WriteLine("Graphs merged");
+
+            //translate TPTPGraph node guids to a <Guid,int> dictionary
+            IDMapping.Clear();
+            int key = 1;
+            foreach(var id in myTPTPGraphService.LookupVertices(1))
+            {
+                IDMapping.Add(id, key);
+                key++;
+            }
+
+            //translate dictionary values into list of Node objects
+            string[] types = { "and", "or", "not", "xor", "nand", "nor" };
+
+            var nodeDataArray = new List<Node>();
+
+            foreach (KeyValuePair<Guid, int> entry in IDMapping)
+            {
+                Random rnd = new Random(); ;
+
+                var n = new Node(types[rnd.Next(0, types.Length)], entry.Value, $"{Math.Pow(-1, rnd.Next(1, 3)) * rnd.Next(0, 200)} {Math.Pow(-1, rnd.Next(1, 3)) * rnd.Next(0, 200)}");
+                nodeDataArray.Add(n);
+            }
+
+            nodeDataArray.Add(new Node("and", 6, "0 0"));
+
+            //serialize list of Node objects
+            var serializedNodes = JsonConvert.SerializeObject(nodeDataArray);
+
+            //send serilized list of node objects to frontend
             using HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
 

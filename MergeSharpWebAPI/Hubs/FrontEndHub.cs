@@ -1,6 +1,4 @@
-using System.Threading.Tasks;
 using MergeSharpWebAPI.Hubs.Clients;
-using MergeSharpWebAPI.Models;
 using Microsoft.AspNetCore.SignalR;
 
 namespace MergeSharpWebAPI.Hubs;
