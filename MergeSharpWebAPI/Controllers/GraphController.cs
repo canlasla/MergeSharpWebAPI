@@ -17,6 +17,23 @@ namespace MergeSharpWebAPI.Controllers;
 [Route("graph")]
 public class GraphController : ControllerBase
 {
+    //TODO: Create endpoint to send frontend state when state is received from server
+    //TODO: Create endpoint for message that contains both node and link data
+
+    //NOTE: this endpoint will not rly be used after the endpoint that contains both node and link data are created
+    [HttpGet("nodes")]
+    public ActionResult<string> Nodes()
+    {
+        try
+        {
+            return JsonConvert.SerializeObject(myGraphService.Nodes);
+        }
+        catch
+        {
+            return NotFound();
+        }
+    }
+
     [HttpGet("vertices")]
     public ActionResult<string> Vertices([FromQuery] int? key = null)
     {

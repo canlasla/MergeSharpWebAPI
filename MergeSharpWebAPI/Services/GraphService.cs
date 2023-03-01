@@ -38,6 +38,24 @@ public class GraphService
         }
     }
 
+    // Json object with gojs node structure for the frontend
+    public readonly struct NodeInfo
+    {
+        [JsonInclude]
+        public readonly string category;
+        [JsonInclude]
+        public readonly int key;
+        [JsonInclude]
+        public readonly string loc;
+
+        public NodeInfo(Graph.Vertex.Type type, int key, string loc)
+        {
+            this.category = type.ToString().ToLower();
+            this.key = key;
+            this.loc = loc;
+        }
+    }
+
     public Dictionary<(int, int), int> EdgeCounts => _graph.Edges.ToDictionary(
                                                                 kv => (_vertexGuidToKeyMap[kv.Key.src], _vertexGuidToKeyMap[kv.Key.dst]),
                                                                 kv => kv.Value
@@ -53,6 +71,18 @@ public class GraphService
 
         throw new KeyNotFoundException();
     }
+
+    //TODO: Create method for returning edges in a format that GoJS supports
+
+    public IEnumerable<NodeInfo> Nodes => _keyToVertexMap.Select(
+        (kv) =>
+        {
+            int key = kv.Key;
+            Graph.Vertex vertex = kv.Value;
+            string loc = vertex.x.ToString() + " " + vertex.y.ToString();
+            return new NodeInfo(vertex.type, key, loc);
+        }
+    );
 
     public IEnumerable<VertexInfo> Vertices => _keyToVertexMap.Select(
         (kv) =>
