@@ -124,6 +124,7 @@ public class TPTPGraphController : ControllerBase
 
         foreach (KeyValuePair<Guid, int> entry in IDMapping)
         {
+            //TODO: change random node positions to the positions in data received from server.
             Random rnd = new Random();
 
             var n = new Node(types[rnd.Next(0, types.Length)], entry.Value, $"{Math.Pow(-1, rnd.Next(1,3)) * rnd.Next(0, 200)} {Math.Pow(-1, rnd.Next(1, 3)) * rnd.Next(0, 200)}");

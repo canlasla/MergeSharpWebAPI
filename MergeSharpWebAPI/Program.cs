@@ -94,10 +94,10 @@ internal class Program
 
             //translate TPTPGraph node guids to a <Guid,int> dictionary
             //clear existing mapping because state has been updated
-            translateGuidstoKeys();
+            TranslateGuidstoKeys();
 
             //translate dictionary values into list of Node objects
-            var nodeDataArray = translateKeystoNodes();
+            var nodeDataArray = TranslateKeystoNodes();
 
             //set uo http client
             using HttpClient client = new();
@@ -140,7 +140,7 @@ internal class Program
         }
     }
 
-    private static List<Node> translateKeystoNodes()
+    private static List<Node> TranslateKeystoNodes()
     {
         string[] types = { "and", "or", "not", "xor", "nand", "nor" };
         var nodeDataArray = new List<Node>();
@@ -158,7 +158,7 @@ internal class Program
         return nodeDataArray;
     }
 
-    private static void translateGuidstoKeys()
+    private static void TranslateGuidstoKeys()
     {
         IDMapping.Clear();
         int key = 1;
@@ -170,7 +170,7 @@ internal class Program
     }
 
     //Function to hold code used to decode and merge byteMsg containing lwwsetmsg
-    private static void decodeLWWSetMsgAndMerge(byte[] byteMsg)
+    private static void DecodeLWWSetMsgAndMerge(byte[] byteMsg)
     {
         MergeSharp.LWWSetMsg<int> lwwMsg = new();
         lwwMsg.Decode(byteMsg);
