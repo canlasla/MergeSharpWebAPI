@@ -16,7 +16,7 @@ using System.Globalization;
 using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.SignalR.Client;
 
-namespace MergeSharpWebAPI;
+namespace MergeSharpWebAPI.ServerConnection;
 
 public static class Globals
 {

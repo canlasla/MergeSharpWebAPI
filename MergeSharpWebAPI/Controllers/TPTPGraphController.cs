@@ -4,7 +4,7 @@ using MergeSharpWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
-using static MergeSharpWebAPI.Globals;
+using static MergeSharpWebAPI.ServerConnection.Globals;
 using MergeSharpWebAPI.Hubs;
 using MergeSharpWebAPI.Hubs.Clients;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -148,7 +148,7 @@ public class TPTPGraphController : ControllerBase
         Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
         if (connection.State == HubConnectionState.Connected)
         {
-            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+            await connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
         }
         Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
@@ -169,7 +169,7 @@ public class TPTPGraphController : ControllerBase
         Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
         if (connection.State == HubConnectionState.Connected)
         {
-            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+            await connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
         }
         Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
@@ -190,7 +190,7 @@ public class TPTPGraphController : ControllerBase
         Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
         if (connection.State == HubConnectionState.Connected)
         {
-            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+            await connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
         }
         Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
@@ -211,7 +211,7 @@ public class TPTPGraphController : ControllerBase
         Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
         if (connection.State == HubConnectionState.Connected)
         {
-            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+            await connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
         }
         Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
@@ -233,7 +233,7 @@ public class TPTPGraphController : ControllerBase
         myTPTPGraphService.MergeTPTPGraphs(id1, id2);
         if (connection.State == HubConnectionState.Connected)
         {
-            await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+            await connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
         }
         return NoContent();
     }

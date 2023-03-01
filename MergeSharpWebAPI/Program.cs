@@ -1,11 +1,8 @@
 using MergeSharpWebAPI.Hubs;
-using MergeSharpWebAPI.Services;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
-using static MergeSharpWebAPI.Globals;
-using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.Text;
+using static MergeSharpWebAPI.ServerConnection.Globals;
 using MergeSharpWebAPI.Models;
 
 internal class Program
@@ -55,34 +52,35 @@ internal class Program
         app.Run();
     }
 
-    private static async Task Main(string[] args)
+    private static void ConfigureConnectionReconnected()
     {
-        IDMapping.Add(Guid.NewGuid(), 1);
-        IDMapping.Add(Guid.NewGuid(), 2);
-        IDMapping.Add(Guid.NewGuid(), 3);
-        IDMapping.Add(Guid.NewGuid(), 4);
-        IDMapping.Add(Guid.NewGuid(), 5);
-
-        Thread serverThread = new Thread(StartServer);
-        serverThread.Start();
-
-        connection.Reconnecting += error =>
+        connection.Reconnected += async connectionId =>
         {
-            System.Diagnostics.Debug.Assert(connection.State == HubConnectionState.Reconnecting);
-
-            // Notify users the connection was lost and the client is reconnecting.
-            // Start queuing or dropping messages.
-
-            return Task.CompletedTask;
+            if (connection.State == HubConnectionState.Connected)
+            {
+                Console.WriteLine("RECONNECTED");
+                // wait some random amount for case when multiple clients are coming back online at same time
+                // want to stagger the SendEncodedMessage call. If SendEncodedMessage sent at same time,
+                // one of them will get lost
+                await Task.Delay(new Random().Next(0, 5) * 1000);
+                await connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+            }
         };
+    }
 
+    private static void ConfigureConnectionClosed()
+    {
         connection.Closed += async (error) =>
                     {
                         await Task.Delay(new Random().Next(0, 5) * 1000);
+                        Console.WriteLine("starting to connect to server again");
+
                         await connection.StartAsync();
                     };
+    }
 
-        // Define behaviour on events from server
+    private static void ConfigureConnectionOnReceiveEncodeMessage()
+    {
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
             Console.WriteLine("Message received: ", byteMsg);
@@ -149,67 +147,51 @@ internal class Program
             using HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
 
-            //var serializedLwwSet = JsonConvert.SerializeObject(myLWWSetService.Get(1));
+            var frontEndLwwSetJson = JsonConvert.SerializeObject(myLWWSetService.Get(1));
 
-            var requestData = new StringContent(serializedNodes, Encoding.UTF8, "application/json");
-            //string myContent = await requestData.ReadAsStringAsync();
-            //Console.WriteLine("im porinting data");
-            //Console.WriteLine(myContent);
+            var requestData = new StringContent(frontEndLwwSetJson, Encoding.UTF8, "application/json");
 
             Console.WriteLine("Sending Put Request for front-end");
             var result = await client.PutAsync(
                 "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestData);
-            //Console.WriteLine(result);
+            Console.WriteLine(result);
 
-            Console.WriteLine("=====================");
+            // TODO: check this result for errors
         });
+    }
 
+    private static async void ConnectToServer()
+    {
         // Start the connection
-        try
+        while (connection.State == HubConnectionState.Disconnected)
         {
-            await connection.StartAsync();
-            Console.WriteLine("Connection started");
-
-            //myLWWSetService.AddElement(1, 11);
-            //myLWWSetService.AddElement(1, 22);
-            //myLWWSetService.AddElement(1, 33);
-            //myLWWSetService.RemoveElement(1, 11);
-            //myLWWSetService.RemoveElement(1, 22);
-
-            //var byteMsg = myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode();
-            //MergeSharp.LWWSetMsg<int> lwwMsg = new();
-            //lwwMsg.Decode(byteMsg);
-            //Console.WriteLine("addset: " + string.Join(",", lwwMsg.addSet.Keys.ToList()));
-            //Console.WriteLine("removeset: " + string.Join(",", lwwMsg.removeSet.Keys.ToList()));
-
-
-
-            //myTPTPGraphService.AddVertex(1, Guid.NewGuid());
-            //myTPTPGraphService.AddVertex(1, Guid.NewGuid());
-            //myTPTPGraphService.AddVertex(1, Guid.NewGuid());
-
-            //Console.WriteLine();
-            //var byteMsgtptp = myTPTPGraphService.GetLastSynchronizedUpdate(1).Encode();
-            //MergeSharp.TPTPGraphMsg tptpGraphMsg = new();
-            //tptpGraphMsg.Decode(byteMsgtptp);
-            //Console.WriteLine(string.Join(", ", myTPTPGraphService.LookupVertices(1)));
-            //Console.WriteLine("Vertices from tptpgraphmsg: " + string.Join(", ", tptpGraphMsg._verticesMsg.addSet));
-            //Console.WriteLine("Edges from tptpgraphmsg: " + string.Join(", ", tptpGraphMsg._edgesMsg.addSet));
-
-
-            //Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(1)));
-            //Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.LookupVertices(1)));
-
-            //if (connection.State == HubConnectionState.Connected)
-            //{
-            //    await MergeSharpWebAPI.Globals.connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
-            //}
-            //Console.WriteLine("Raised RecieveMessage event on all clients");
+            try
+            {
+                await connection.StartAsync();
+                Console.WriteLine("Connection started");
+                await connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error occured when connecting to server:");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(connection.State);
+                await Task.Delay(5000);
+            }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error occured when connecting to server:");
-            Console.WriteLine(ex.Message);
-        }
+    }
+    private static void Main(string[] args)
+    {
+        Thread CRDTEndpoints = new Thread(StartServer);
+        CRDTEndpoints.Start();
+
+        ConfigureConnectionReconnected();
+
+        ConfigureConnectionClosed();
+
+        ConfigureConnectionOnReceiveEncodeMessage();
+
+        ConnectToServer();
+
     }
 }
