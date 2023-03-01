@@ -23,7 +23,6 @@ public static class Globals
     public static readonly LWWSetService<int> myLWWSetService = new();
     public static readonly TPTPGraphService myTPTPGraphService = new();
     public static readonly GraphService myGraphService = new();
-    //dictionary from guids to ints
     public static readonly Dictionary<Guid, int> IDMapping = new();
 
     //public static IDMapping = new Dictionary<Guid, int>() { { Guid.NewGuid(), 1}, { Guid.NewGuid(), 2 } };
@@ -32,8 +31,7 @@ public static class Globals
     // private const string PropagationMessageServer = "https://localhost:7106/hubs/propagationmessage";
     // private const string PropagationMessageServer = "http://localhost:5106/hubs/propagationmessage";
 
-    public static readonly HubConnection connection = new HubConnectionBuilder()
-                    .WithUrl(PropagationMessageServer)
-                    .WithAutomaticReconnect()
-                    .Build();
+    public static readonly HubConnection connection = new HubConnectionBuilder().WithUrl(PropagationMessageServer)
+                                                                                .WithAutomaticReconnect()
+                                                                                .Build();
 }
