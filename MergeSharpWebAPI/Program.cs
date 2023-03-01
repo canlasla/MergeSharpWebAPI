@@ -7,7 +7,7 @@ using MergeSharpWebAPI.Models;
 
 internal class Program
 {
-    private static void StartServer()
+    private static void CRDTEndpointsForFrontend()
     {
         var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -22,12 +22,14 @@ internal class Program
         _ = builder.Services.AddEndpointsApiExplorer();
         _ = builder.Services.AddSwaggerGen();
 
-        _ = builder.Services.AddCors(options => options.AddPolicy(name: MyAllowSpecificOrigins,
-                              policy => _ = policy.AllowAnyHeader()
-                                        .AllowAnyMethod()
-                                        .SetIsOriginAllowed((host) => true)
-                                        .AllowCredentials()
-                                        ));
+        _ = builder.Services.AddCors(options => options.AddPolicy(
+                                        name: MyAllowSpecificOrigins,
+                                        policy => _ = policy.AllowAnyHeader()
+                                                            .AllowAnyMethod()
+                                                            .SetIsOriginAllowed((host) => true)
+                                                            .AllowCredentials()
+                                        )
+                                    );
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -84,39 +86,14 @@ internal class Program
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
             Console.WriteLine("Message received: ", byteMsg);
-            //MergeSharp.LWWSetMsg<int> lwwMsg = new();
-            //lwwMsg.Decode(byteMsg);
 
-            // --- Print the received LWWSetMsg state ---
-
-            //Console.WriteLine("lwwMsg.addSet:");
-            //Console.WriteLine(string.Join(",", lwwMsg.addSet.Keys.ToList()));
-            ////Console.WriteLine(string.Join(",", lwwMsg.addSet.Values.ToList()));
-
-            //Console.WriteLine("lwwMsg.removeSet:");
-            //Console.WriteLine(string.Join(",", lwwMsg.removeSet.Keys.ToList()));
-            ////Console.WriteLine(string.Join(",", lwwMsg.removeSet.Values.ToList()));
-
-            //// --- Merge received state with current state and print the result ---
-
-            //myLWWSetService.MergeLWWSets(1, lwwMsg);
-            //Console.WriteLine("LwwSet:");
-            //Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
-
-            // --- Send the updated state to the frontend ---
-
-            //Declare TPTPMsg
             MergeSharp.TPTPGraphMsg tptpgraphMsg = new MergeSharp.TPTPGraphMsg();
-
-            //initialize TPTPMsg with decoded received bytemsg
             tptpgraphMsg.Decode(byteMsg);
 
-            //merge TPTPMsg with local TPTPGraph
             myTPTPGraphService.MergeTPTPGraphs(1, tptpgraphMsg);
 
             Console.WriteLine("Graphs merged");
 
-            //translate TPTPGraph node guids to a <Guid,int> dictionary
             IDMapping.Clear();
             int key = 1;
             foreach(var id in myTPTPGraphService.LookupVertices(1))
@@ -125,7 +102,6 @@ internal class Program
                 key++;
             }
 
-            //translate dictionary values into list of Node objects
             string[] types = { "and", "or", "not", "xor", "nand", "nor" };
 
             var nodeDataArray = new List<Node>();
@@ -140,10 +116,10 @@ internal class Program
 
             nodeDataArray.Add(new Node("and", 6, "0 0"));
 
-            //serialize list of Node objects
+            // serialize list of Node objects
             var serializedNodes = JsonConvert.SerializeObject(nodeDataArray);
 
-            //send serilized list of node objects to frontend
+            // send serialized list of node objects to frontend
             using HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
 
@@ -162,7 +138,6 @@ internal class Program
 
     private static async void ConnectToServer()
     {
-        // Start the connection
         while (connection.State == HubConnectionState.Disconnected)
         {
             try
@@ -182,7 +157,7 @@ internal class Program
     }
     private static void Main(string[] args)
     {
-        Thread CRDTEndpoints = new Thread(StartServer);
+        Thread CRDTEndpoints = new Thread(CRDTEndpointsForFrontend);
         CRDTEndpoints.Start();
 
         ConfigureConnectionReconnected();

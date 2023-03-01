@@ -4,7 +4,7 @@ public class FrontEndMessage
 {
     public FrontEndMessage(object message)
     {
-        this.Message = message;
+        Message = message;
     }
     public object Message { get; set; }
 }
