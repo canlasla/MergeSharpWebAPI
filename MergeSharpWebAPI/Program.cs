@@ -58,6 +58,9 @@ internal class Program
             if (connection.State == HubConnectionState.Connected)
             {
                 Console.WriteLine("RECONNECTED");
+                // wait some random amount for case when multiple clients are coming back online at same time
+                // want to stagger the SendEncodedMessage call. If SendEncodedMessage sent at same time, 
+                // one of them will get lost
                 await Task.Delay(new Random().Next(0, 5) * 1000);
                 await connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
             }
