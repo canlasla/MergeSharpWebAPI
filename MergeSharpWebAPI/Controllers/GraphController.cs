@@ -47,9 +47,9 @@ public class GraphController : ControllerBase
         {
             Console.WriteLine($"Added Vertex {key} ({x},{y}) {type} locally");
 
-            if (connection.State == HubConnectionState.Connected)
+            if (serverConnection.State == HubConnectionState.Connected)
             {
-                await connection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
+                await serverConnection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
                 Console.WriteLine("Raised SendEncodedMessage event with new state on server to propagate to other clients");
             }
 
@@ -73,9 +73,9 @@ public class GraphController : ControllerBase
         {
             Console.WriteLine($"Removed Vertex {key} locally");
 
-            if (connection.State == HubConnectionState.Connected)
+            if (serverConnection.State == HubConnectionState.Connected)
             {
-                await connection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
+                await serverConnection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
                 Console.WriteLine("Raised SendEncodedMessage event with new state on server to propagate to other clients");
             }
 
@@ -120,9 +120,9 @@ public class GraphController : ControllerBase
         if (myGraphService.AddEdge(srcKey, dstKey))
         {
             Console.WriteLine($"Added Edge ({srcKey}, {dstKey}) locally");
-            if (connection.State == HubConnectionState.Connected)
+            if (serverConnection.State == HubConnectionState.Connected)
             {
-                await connection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
+                await serverConnection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
                 Console.WriteLine("Raised SendEncodedMessage event with new state on server to propagate to other clients");
             }
 
@@ -145,9 +145,9 @@ public class GraphController : ControllerBase
         if (myGraphService.RemoveEdge(srcKey, dstKey))
         {
             Console.WriteLine($"Removed Edge ({srcKey}, {dstKey}) locally");
-            if (connection.State == HubConnectionState.Connected)
+            if (serverConnection.State == HubConnectionState.Connected)
             {
-                await connection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
+                await serverConnection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
                 Console.WriteLine("Raised SendEncodedMessage event with new state on server to propagate to other clients");
             }
 

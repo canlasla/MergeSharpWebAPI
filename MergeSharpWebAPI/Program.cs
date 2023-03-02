@@ -30,60 +30,60 @@ internal class Program
                                                             .AllowCredentials()
                                         )
                                     );
-        var app = builder.Build();
+        var frontendEndpoints = builder.Build();
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
+        if (frontendEndpoints.Environment.IsDevelopment())
         {
-            _ = app.UseSwagger();
-            _ = app.UseSwaggerUI();
+            _ = frontendEndpoints.UseSwagger();
+            _ = frontendEndpoints.UseSwaggerUI();
         }
 
-        _ = app.UseHttpsRedirection();
+        _ = frontendEndpoints.UseHttpsRedirection();
 
-        _ = app.UseCors(MyAllowSpecificOrigins);
+        _ = frontendEndpoints.UseCors(MyAllowSpecificOrigins);
 
-        _ = app.UseRouting();
+        _ = frontendEndpoints.UseRouting();
 
-        _ = app.UseAuthorization();
+        _ = frontendEndpoints.UseAuthorization();
 
-        _ = app.MapControllers();
-        _ = app.MapGet("/", () => "Hello world!");
-        _ = app.MapHub<FrontEndHub>("/hubs/frontendmessage");
+        _ = frontendEndpoints.MapControllers();
+        _ = frontendEndpoints.MapGet("/", () => "Hello world!");
+        _ = frontendEndpoints.MapHub<FrontEndHub>("/hubs/frontendmessage");
 
-        app.Run();
+        frontendEndpoints.Run();
     }
 
-    private static void ConfigureConnectionReconnected()
+    private static void ConfigureServerConnectionReconnected()
     {
-        connection.Reconnected += async connectionId =>
+        serverConnection.Reconnected += async connectionId =>
         {
-            if (connection.State == HubConnectionState.Connected)
+            if (serverConnection.State == HubConnectionState.Connected)
             {
                 Console.WriteLine("RECONNECTED");
                 // wait some random amount for case when multiple clients are coming back online at same time
                 // want to stagger the SendEncodedMessage call. If SendEncodedMessage sent at same time,
                 // one of them will get lost
                 await Task.Delay(new Random().Next(0, 5) * 1000);
-                await connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+                await serverConnection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
             }
         };
     }
 
-    private static void ConfigureConnectionClosed()
+    private static void ConfigureServerConnectionClosed()
     {
-        connection.Closed += async (error) =>
+        serverConnection.Closed += async (error) =>
                     {
                         await Task.Delay(new Random().Next(0, 5) * 1000);
                         Console.WriteLine("starting to connect to server again");
 
-                        await connection.StartAsync();
+                        await serverConnection.StartAsync();
                     };
     }
 
-    private static void ConfigureConnectionOnReceiveEncodeMessage()
+    private static void ConfigureServerConnectionOnReceiveEncodeMessage()
     {
-        _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
+        _ = serverConnection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
             //Console.WriteLine("Message received: ", byteMsg);
 
@@ -123,7 +123,7 @@ internal class Program
             // var frontEndLwwSetJson = JsonConvert.SerializeObject(myLWWSetService.Get(1));
             // var requestDatalwwset = new StringContent(serializedLwwSet, Encoding.UTF8, "application/json");
             // var result = await client.PutAsync(
-            //     "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestDatalwwset);   
+            //     "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestDatalwwset);
 
             // TODO: check this result for errors
         });
@@ -131,19 +131,19 @@ internal class Program
 
     private static async void ConnectToServer()
     {
-        while (connection.State == HubConnectionState.Disconnected)
+        while (serverConnection.State == HubConnectionState.Disconnected)
         {
             try
             {
-                await connection.StartAsync();
+                await serverConnection.StartAsync();
                 Console.WriteLine("Connection started");
-                await connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+                await serverConnection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
             }
             catch (Exception ex)
             {
                 Console.WriteLine("Error occured when connecting to server:");
                 Console.WriteLine(ex.Message);
-                Console.WriteLine(connection.State);
+                Console.WriteLine(serverConnection.State);
                 await Task.Delay(5000);
             }
         }
@@ -205,14 +205,14 @@ internal class Program
 
     private static void Main(string[] args)
     {
-        Thread CRDTEndpoints = new Thread(CRDTEndpointsForFrontend);
-        CRDTEndpoints.Start();
+        Thread frontEndCRDTEndpoints = new Thread(CRDTEndpointsForFrontend);
+        frontEndCRDTEndpoints.Start();
 
-        ConfigureConnectionReconnected();
+        ConfigureServerConnectionReconnected();
 
-        ConfigureConnectionClosed();
+        ConfigureServerConnectionClosed();
 
-        ConfigureConnectionOnReceiveEncodeMessage();
+        ConfigureServerConnectionOnReceiveEncodeMessage();
 
         ConnectToServer();
     }

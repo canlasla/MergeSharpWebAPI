@@ -70,9 +70,9 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         myLWWSetService.Update(lwwSet);
-        if (connection.State == HubConnectionState.Connected)
+        if (serverConnection.State == HubConnectionState.Connected)
         {
-            await Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+            await Globals.serverConnection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
         }
         return NoContent();
     }
@@ -129,10 +129,10 @@ public class LWWSetController : ControllerBase
 
         Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
         Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(id)));
-        Console.WriteLine(connection.State);
-        if (connection.State == HubConnectionState.Connected)
+        Console.WriteLine(serverConnection.State);
+        if (serverConnection.State == HubConnectionState.Connected)
         {
-            await Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+            await Globals.serverConnection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
         }
         Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
@@ -149,10 +149,10 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(id)));
-        Console.WriteLine(connection.State);
-        if (connection.State == HubConnectionState.Connected)
+        Console.WriteLine(serverConnection.State);
+        if (serverConnection.State == HubConnectionState.Connected)
         {
-            await Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+            await Globals.serverConnection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
         }
         Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
@@ -167,9 +167,9 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         myLWWSetService.ClearLWWSet(id);
-        if (connection.State == HubConnectionState.Connected)
+        if (serverConnection.State == HubConnectionState.Connected)
         {
-            await Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+            await Globals.serverConnection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
         }
         return NoContent();
     }
@@ -188,9 +188,9 @@ public class LWWSetController : ControllerBase
             return NotFound();
 
         myLWWSetService.MergeLWWSets(id1, id2);
-        if (connection.State == HubConnectionState.Connected)
+        if (serverConnection.State == HubConnectionState.Connected)
         {
-            await Globals.connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+            await Globals.serverConnection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
         }
         return NoContent();
     }
