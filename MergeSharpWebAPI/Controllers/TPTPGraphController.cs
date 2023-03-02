@@ -146,9 +146,9 @@ public class TPTPGraphController : ControllerBase
 
         Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
         Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
-        if (connection.State == HubConnectionState.Connected)
+        if (serverConnection.State == HubConnectionState.Connected)
         {
-            await connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+            await serverConnection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
         }
         Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
@@ -167,9 +167,9 @@ public class TPTPGraphController : ControllerBase
             return NotFound();
 
         Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
-        if (connection.State == HubConnectionState.Connected)
+        if (serverConnection.State == HubConnectionState.Connected)
         {
-            await connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+            await serverConnection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
         }
         Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
@@ -188,9 +188,9 @@ public class TPTPGraphController : ControllerBase
 
         Console.WriteLine(string.Join(", ", UserHandler.ConnectedIds.ToList()));
         Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
-        if (connection.State == HubConnectionState.Connected)
+        if (serverConnection.State == HubConnectionState.Connected)
         {
-            await connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+            await serverConnection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
         }
         Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
@@ -209,9 +209,9 @@ public class TPTPGraphController : ControllerBase
             return NotFound();
 
         Console.WriteLine(JsonConvert.SerializeObject(myTPTPGraphService.Get(id)));
-        if (connection.State == HubConnectionState.Connected)
+        if (serverConnection.State == HubConnectionState.Connected)
         {
-            await connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+            await serverConnection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
         }
         Console.WriteLine("Raised RecieveMessage event on all clients");
         return NoContent();
@@ -231,9 +231,9 @@ public class TPTPGraphController : ControllerBase
             return NotFound();
 
         myTPTPGraphService.MergeTPTPGraphs(id1, id2);
-        if (connection.State == HubConnectionState.Connected)
+        if (serverConnection.State == HubConnectionState.Connected)
         {
-            await connection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
+            await serverConnection.InvokeAsync("SendEncodedMessage", myTPTPGraphService.Get(1).TptpGraph.GetLastSynchronizedUpdate().Encode());
         }
         return NoContent();
     }
