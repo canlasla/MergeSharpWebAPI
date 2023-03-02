@@ -23,17 +23,14 @@ public class GraphService
         [JsonInclude]
         public readonly int key;
         [JsonInclude]
-        public readonly double x;
-        [JsonInclude]
-        public readonly double y;
+        public readonly string loc;
         [JsonInclude]
         public readonly string type;
 
         public VertexInfo(int key, double x, double y, Graph.Vertex.Type type)
         {
             this.key = key;
-            this.x = x;
-            this.y = y;
+            this.loc = $"{x} {y}";
             this.type = type.ToString().ToLower();
         }
     }
