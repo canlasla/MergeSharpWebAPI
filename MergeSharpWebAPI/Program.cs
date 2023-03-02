@@ -1,16 +1,13 @@
 using MergeSharpWebAPI.Hubs;
-using MergeSharpWebAPI.Services;
-using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Client;
-using static MergeSharpWebAPI.Globals;
-using System.Net.Http.Headers;
 using Newtonsoft.Json;
 using System.Text;
+using static MergeSharpWebAPI.ServerConnection.Globals;
 using MergeSharpWebAPI.Models;
 
 internal class Program
 {
-    private static void StartServer()
+    private static void CRDTEndpointsForFrontend()
     {
         var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
@@ -25,12 +22,14 @@ internal class Program
         _ = builder.Services.AddEndpointsApiExplorer();
         _ = builder.Services.AddSwaggerGen();
 
-        _ = builder.Services.AddCors(options => options.AddPolicy(name: MyAllowSpecificOrigins,
-                              policy => _ = policy.AllowAnyHeader()
-                                        .AllowAnyMethod()
-                                        .SetIsOriginAllowed((host) => true)
-                                        .AllowCredentials()
-                                        ));
+        _ = builder.Services.AddCors(options => options.AddPolicy(
+                                        name: MyAllowSpecificOrigins,
+                                        policy => _ = policy.AllowAnyHeader()
+                                                            .AllowAnyMethod()
+                                                            .SetIsOriginAllowed((host) => true)
+                                                            .AllowCredentials()
+                                        )
+                                    );
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -55,39 +54,43 @@ internal class Program
         app.Run();
     }
 
-    private static async Task Main(string[] args)
+    private static void ConfigureConnectionReconnected()
     {
-        Thread serverThread = new Thread(StartServer);
-        serverThread.Start();
-
-        connection.Reconnecting += error =>
+        connection.Reconnected += async connectionId =>
         {
-            System.Diagnostics.Debug.Assert(connection.State == HubConnectionState.Reconnecting);
-
-            // Notify users the connection was lost and the client is reconnecting.
-            // Start queuing or dropping messages.
-
-            return Task.CompletedTask;
+            if (connection.State == HubConnectionState.Connected)
+            {
+                Console.WriteLine("RECONNECTED");
+                // wait some random amount for case when multiple clients are coming back online at same time
+                // want to stagger the SendEncodedMessage call. If SendEncodedMessage sent at same time,
+                // one of them will get lost
+                await Task.Delay(new Random().Next(0, 5) * 1000);
+                await connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+            }
         };
+    }
 
+    private static void ConfigureConnectionClosed()
+    {
         connection.Closed += async (error) =>
                     {
                         await Task.Delay(new Random().Next(0, 5) * 1000);
+                        Console.WriteLine("starting to connect to server again");
+
                         await connection.StartAsync();
                     };
+    }
 
-        // Define behaviour on events from server
+    private static void ConfigureConnectionOnReceiveEncodeMessage()
+    {
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
             //Console.WriteLine("Message received: ", byteMsg);
 
             //Declare TPTPMsg
             MergeSharp.TPTPGraphMsg tptpgraphMsg = new MergeSharp.TPTPGraphMsg();
-
-            //initialize TPTPMsg with decoded received bytemsg
             tptpgraphMsg.Decode(byteMsg);
 
-            //merge TPTPMsg with local TPTPGraph
             myTPTPGraphService.MergeTPTPGraphs(1, tptpgraphMsg);
 
             Console.WriteLine("Graphs merged");
@@ -117,26 +120,32 @@ internal class Program
 
             // decodeLWWSetMsgAndMerge(byteMsg);
             // Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
-            // var serializedLwwSet = JsonConvert.SerializeObject(myLWWSetService.Get(1));
+            // var frontEndLwwSetJson = JsonConvert.SerializeObject(myLWWSetService.Get(1));
             // var requestDatalwwset = new StringContent(serializedLwwSet, Encoding.UTF8, "application/json");
             // var result = await client.PutAsync(
             //     "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestDatalwwset);   
 
-            Console.WriteLine("=====================");
+            // TODO: check this result for errors
         });
+    }
 
-        // Start the connection
-        try
+    private static async void ConnectToServer()
+    {
+        while (connection.State == HubConnectionState.Disconnected)
         {
-            await connection.StartAsync();
-            Console.WriteLine("Connection started");
-
-            //Console.WriteLine("Raised RecieveMessage event on all clients");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("Error occured when connecting to server:");
-            Console.WriteLine(ex.Message);
+            try
+            {
+                await connection.StartAsync();
+                Console.WriteLine("Connection started");
+                await connection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error occured when connecting to server:");
+                Console.WriteLine(ex.Message);
+                Console.WriteLine(connection.State);
+                await Task.Delay(5000);
+            }
         }
     }
 
@@ -192,5 +201,19 @@ internal class Program
         Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
 
         // --- Send the updated state to the frontend ---
+    }
+
+    private static void Main(string[] args)
+    {
+        Thread CRDTEndpoints = new Thread(CRDTEndpointsForFrontend);
+        CRDTEndpoints.Start();
+
+        ConfigureConnectionReconnected();
+
+        ConfigureConnectionClosed();
+
+        ConfigureConnectionOnReceiveEncodeMessage();
+
+        ConnectToServer();
     }
 }

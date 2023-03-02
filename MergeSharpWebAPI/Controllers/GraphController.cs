@@ -1,7 +1,7 @@
 using MergeSharpWebAPI.Hubs;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using static MergeSharpWebAPI.Globals;
+using static MergeSharpWebAPI.ServerConnection.Globals;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
