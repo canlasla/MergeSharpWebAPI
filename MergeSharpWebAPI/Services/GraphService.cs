@@ -27,7 +27,7 @@ public class GraphService
         [JsonInclude]
         public readonly string type;
 
-        public VertexInfo(int key, double x, double y, Graph.Vertex.Type type)
+        public VertexInfo(int key, int x, int y, Graph.Vertex.Type type)
         {
             this.key = key;
             this.loc = $"{x} {y}";
@@ -69,7 +69,7 @@ public class GraphService
         throw new KeyNotFoundException();
     }
 
-    public bool AddVertex(int key, double x, double y, string stype)
+    public bool AddVertex(int key, int x, int y, string stype)
     {
         if (_keyToVertexMap.ContainsKey(key))
         {

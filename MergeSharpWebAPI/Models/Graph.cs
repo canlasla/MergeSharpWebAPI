@@ -67,11 +67,11 @@ public class Graph : CRDT
         }
 
         public readonly Guid guid { get; }
-        public double x { get; set; }
-        public double y { get; set; }
+        public int x { get; set; }
+        public int y { get; set; }
         public readonly Type type { get; }
 
-        public Vertex(Guid guid, double x, double y, Type type)
+        public Vertex(Guid guid, int x, int y, Type type)
         {
             this.guid = guid;
             this.x = x;
