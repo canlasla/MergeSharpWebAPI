@@ -85,8 +85,9 @@ internal class Program
     {
         _ = connection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
-            Console.WriteLine("Message received: ", byteMsg);
+            //Console.WriteLine("Message received: ", byteMsg);
 
+            //Declare TPTPMsg
             MergeSharp.TPTPGraphMsg tptpgraphMsg = new MergeSharp.TPTPGraphMsg();
             tptpgraphMsg.Decode(byteMsg);
 
@@ -94,43 +95,35 @@ internal class Program
 
             Console.WriteLine("Graphs merged");
 
-            IDMapping.Clear();
-            int key = 1;
-            foreach(var id in myTPTPGraphService.LookupVertices(1))
-            {
-                IDMapping.Add(id, key);
-                key++;
-            }
+            //translate TPTPGraph node guids to a <Guid,int> dictionary
+            //clear existing mapping because state has been updated
+            TranslateGuidstoKeys();
 
-            string[] types = { "and", "or", "not", "xor", "nand", "nor" };
+            //translate dictionary values into list of Node objects
+            var nodeDataArray = TranslateKeystoNodes();
 
-            var nodeDataArray = new List<Node>();
-
-            foreach (KeyValuePair<Guid, int> entry in IDMapping)
-            {
-                Random rnd = new Random(); ;
-
-                var n = new Node(types[rnd.Next(0, types.Length)], entry.Value, $"{Math.Pow(-1, rnd.Next(1, 3)) * rnd.Next(0, 200)} {Math.Pow(-1, rnd.Next(1, 3)) * rnd.Next(0, 200)}");
-                nodeDataArray.Add(n);
-            }
-
-            nodeDataArray.Add(new Node("and", 6, "0 0"));
-
-            // serialize list of Node objects
-            var serializedNodes = JsonConvert.SerializeObject(nodeDataArray);
-
-            // send serialized list of node objects to frontend
+            //set uo http client
             using HttpClient client = new();
             client.DefaultRequestHeaders.Accept.Clear();
 
-            var frontEndLwwSetJson = JsonConvert.SerializeObject(myLWWSetService.Get(1));
 
-            var requestData = new StringContent(frontEndLwwSetJson, Encoding.UTF8, "application/json");
-
+            //serialize list of Node objects
+            var serializedNodes = JsonConvert.SerializeObject(nodeDataArray);
+            Console.WriteLine("serialized nodes: " + serializedNodes);
+            var requestData = new StringContent(serializedNodes, Encoding.UTF8, "application/json");
+            //send serilized list of node objects to frontend
+            //TODO: Send updated state to frontend
             Console.WriteLine("Sending Put Request for front-end");
             var result = await client.PutAsync(
-                "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestData);
+                "https://localhost:7009/TPTPGraph/SendTPTPGraphToFrontEnd", requestData);
             Console.WriteLine(result);
+
+            // decodeLWWSetMsgAndMerge(byteMsg);
+            // Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
+            // var frontEndLwwSetJson = JsonConvert.SerializeObject(myLWWSetService.Get(1));
+            // var requestDatalwwset = new StringContent(serializedLwwSet, Encoding.UTF8, "application/json");
+            // var result = await client.PutAsync(
+            //     "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestDatalwwset);   
 
             // TODO: check this result for errors
         });
@@ -155,6 +148,61 @@ internal class Program
             }
         }
     }
+
+    private static List<Node> TranslateKeystoNodes()
+    {
+        string[] types = { "and", "or", "not", "xor", "nand", "nor" };
+        var nodeDataArray = new List<Node>();
+
+        foreach (KeyValuePair<Guid, int> entry in IDMapping)
+        {
+            Random rnd = new Random(); ;
+
+            var n = new Node(types[rnd.Next(0, types.Length)], entry.Value, $"{Math.Pow(-1, rnd.Next(1, 3)) * rnd.Next(0, 200)} {Math.Pow(-1, rnd.Next(1, 3)) * rnd.Next(0, 200)}");
+            nodeDataArray.Add(n);
+        }
+
+        // nodeDataArray.Add(new Node("and", 6, "0 0"));
+
+        return nodeDataArray;
+    }
+
+    private static void TranslateGuidstoKeys()
+    {
+        IDMapping.Clear();
+        int key = 1;
+        foreach (var id in myTPTPGraphService.LookupVertices(1))
+        {
+            IDMapping.Add(id, key);
+            key++;
+        }
+    }
+
+    //Function to hold code used to decode and merge byteMsg containing lwwsetmsg
+    private static void DecodeLWWSetMsgAndMerge(byte[] byteMsg)
+    {
+        MergeSharp.LWWSetMsg<int> lwwMsg = new();
+        lwwMsg.Decode(byteMsg);
+
+        // --- Print the received LWWSetMsg state ---
+
+        Console.WriteLine("lwwMsg.addSet:");
+        Console.WriteLine(string.Join(",", lwwMsg.addSet.Keys.ToList()));
+        //Console.WriteLine(string.Join(",", lwwMsg.addSet.Values.ToList()));
+
+        Console.WriteLine("lwwMsg.removeSet:");
+        Console.WriteLine(string.Join(",", lwwMsg.removeSet.Keys.ToList()));
+        //Console.WriteLine(string.Join(",", lwwMsg.removeSet.Values.ToList()));
+
+        // --- Merge received state with current state and print the result ---
+
+        myLWWSetService.MergeLWWSets(1, lwwMsg);
+        Console.WriteLine("LwwSet:");
+        Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
+
+        // --- Send the updated state to the frontend ---
+    }
+
     private static void Main(string[] args)
     {
         Thread CRDTEndpoints = new Thread(CRDTEndpointsForFrontend);
@@ -167,6 +215,5 @@ internal class Program
         ConfigureConnectionOnReceiveEncodeMessage();
 
         ConnectToServer();
-
     }
 }

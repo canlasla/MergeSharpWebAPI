@@ -23,7 +23,7 @@ public class TPTPGraphController : ControllerBase
     }
 
     [HttpPut("SendTPTPGraphToFrontEnd")]
-    public async Task<ActionResult> SendMessage([FromBody] MergeSharpWebAPI.Models.TPTPGraphModel message)
+    public async Task<ActionResult> SendMessage([FromBody] List<Node> message)
     {
         // TODO: change the message to JSON for frontend
         await _hubContext.Clients.All.ReceiveMessage(message);
@@ -124,13 +124,13 @@ public class TPTPGraphController : ControllerBase
 
         foreach (KeyValuePair<Guid, int> entry in IDMapping)
         {
-            Random rnd = new Random();;
+            //TODO: change random node positions to the positions in data received from server.
+            Random rnd = new Random();
 
             var n = new Node(types[rnd.Next(0, types.Length)], entry.Value, $"{Math.Pow(-1, rnd.Next(1,3)) * rnd.Next(0, 200)} {Math.Pow(-1, rnd.Next(1, 3)) * rnd.Next(0, 200)}");
             result.Add(n);
         }
 
-        result.Add(new Node("and", 6, "0 0"));
         return JsonConvert.SerializeObject(result);
     }
 
