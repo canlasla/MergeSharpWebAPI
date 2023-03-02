@@ -63,7 +63,7 @@ public class Graph : CRDT
     {
         public enum Type
         {
-            Invalid, And, Or, Xor, Not, Nand, Nor, XNor
+            Invalid, And, Or, Xor, Not, Nand, Nor, XNor, Input, Output
         }
 
         public readonly Guid guid { get; }
