@@ -5,6 +5,9 @@ using static MergeSharpWebAPI.ServerConnection.Globals;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
+using Microsoft.AspNetCore.SignalR;
+using MergeSharpWebAPI.Hubs.Clients;
+
 namespace MergeSharpWebAPI.Controllers;
 
 
@@ -17,6 +20,42 @@ namespace MergeSharpWebAPI.Controllers;
 [Route("graph")]
 public class GraphController : ControllerBase
 {
+
+    private readonly IHubContext<FrontEndHub, IFrontEndClient> _hubContext;
+
+    public GraphController(IHubContext<FrontEndHub, IFrontEndClient> hubContext)
+    {
+        _hubContext = hubContext;
+    }
+
+    // TODO: complete endpoint for backend to send graph data to frontend 
+    // needs object argument that contains vertex info array and edge info array
+    [HttpPut("SendGraphToFrontEnd")]
+    public async Task<ActionResult> SendMessage()
+    {
+        // set graphDataMessage by calling method in service
+        var graphDataMessage = myGraphService.GetGraphMessage();
+        // TODO: change the message to JSON for frontend
+        await _hubContext.Clients.All.ReceiveMessage(graphDataMessage);
+        return NoContent();
+    }
+
+    // TODO: complete endpoint for frontend to query graph data
+    // needs to create object that contains vertex info array and edge info array
+    [HttpGet("graphdata")]
+    public ActionResult<string> GetGraphData()
+    {
+        try
+        {
+            //make call to method in controller
+            return JsonConvert.SerializeObject(myGraphService.Vertices);
+        }
+        catch
+        {
+            return NotFound();
+        }
+    }
+
     [HttpGet("vertices")]
     public ActionResult<string> Vertices([FromQuery] int? key = null)
     {

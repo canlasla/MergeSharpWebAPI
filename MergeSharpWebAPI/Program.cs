@@ -136,6 +136,20 @@ internal class Program
     {
         _ = serverConnection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
+            //Merge Graphs using applysynchronizedupdate from graphservice
+            myGraphService.ApplySynchronizedUpdate(byteMsg);
+
+            //send to data to frontend by calling SendGraphToFrontEnd endpoint
+
+            //set up http client
+            using HttpClient client = new();
+            client.DefaultRequestHeaders.Accept.Clear();
+
+            Console.WriteLine("Sending Put Request for front-end");
+            var result = await client.PutAsync(
+                "https://localhost:7009/Graph/SendGraphToFrontEnd", null);
+            Console.WriteLine(result);
+
             // ProcessAndDisplayTptpGraphMsg(byteMsg);
             ProcessAndDisplayLwwSetMsg(byteMsg);
         });
