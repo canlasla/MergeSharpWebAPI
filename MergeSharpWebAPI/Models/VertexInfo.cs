@@ -50,19 +50,22 @@ public class VertexInfo : CRDT
 {
     private readonly LWWRegister<int> _x;
     private readonly LWWRegister<int> _y;
-    private Graph.Vertex.Type _type;
+
+    public int X => _x.Value;
+    public int Y => _y.Value;
+    public Graph.Vertex.Type Type { get; private set; }
 
     public VertexInfo() {
         _x = new();
         _y = new();
-        _type = Graph.Vertex.Type.Invalid;
+        Type = Graph.Vertex.Type.Invalid;
      }
 
     public VertexInfo(int x, int y, Graph.Vertex.Type type)
     {
         _x = new(x);
         _y = new(y);
-        _type = type;
+        Type = type;
     }
 
     public override void ApplySynchronizedUpdate(PropagationMessage receivedUpdate)
@@ -76,9 +79,9 @@ public class VertexInfo : CRDT
         _x.ApplySynchronizedUpdate(received.xMsg);
         _y.ApplySynchronizedUpdate(received.yMsg);
 
-        // this should only occur if this._type == Graph.Vertex.Type.Invalid
+        // this should only occur if this.Type == Graph.Vertex.Type.Invalid
         // NOTE: Graph.Vertex.Type.Invalid is the smallest enum
-        _type = _type > received.type ? _type : received.type;
+        Type = Type > received.type ? Type : received.type;
     }
     public override PropagationMessage DecodePropagationMessage(byte[] input)
     {
@@ -87,5 +90,5 @@ public class VertexInfo : CRDT
         return msg;
     }
 
-    public override PropagationMessage GetLastSynchronizedUpdate() => new VertexInfoMsg(this._x, this._y, this._type);
+    public override PropagationMessage GetLastSynchronizedUpdate() => new VertexInfoMsg(this._x, this._y, this.Type);
 }

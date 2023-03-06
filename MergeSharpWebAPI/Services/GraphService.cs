@@ -134,21 +134,22 @@ public class GraphService
         return false;
     }
 
-    // TODO: where is this function called / who calls this function? Frontend or backend?
-    // - if frontend then how would they have access to GraphMsg?
-    // public void ApplySynchronizedUpdate(GraphMsg msg) => _graph.ApplySynchronizedUpdate(msg);
-
-    // Change the above to the following:
     public void ApplySynchronizedUpdate(byte[] encodedMsg)
     {
         GraphMsg decodedMsg = new();
         decodedMsg.Decode(encodedMsg);
-        // TODO: This function should return true or false if the merge was successful
-        // encodedMsg may be of wrong type or the message may have been messed up in transit
-        // TODO: or catch the NotSupportedException
         _graph.ApplySynchronizedUpdate(decodedMsg);
 
-        // TODO: update _keyToVertexMap and _vertexGuidToKeyMap
+        _vertexGuidToKeyMap.Clear();
+        _keyToVertexMap.Clear();
+
+        int i = 0;
+        foreach (Graph.Vertex vertex in _graph.Vertices)
+        {
+            _vertexGuidToKeyMap.Add(vertex.guid, i);
+            _keyToVertexMap.Add(i, vertex);
+            i++;
+        }
     }
 
     // return the encoded message because the caller should not know anything about Graph
