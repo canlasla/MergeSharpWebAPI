@@ -81,52 +81,63 @@ internal class Program
                     };
     }
 
+    private static async void ProcessAndDisplayLwwSetMsg(byte[] byteMsg)
+    {
+        using HttpClient client = new();
+        client.DefaultRequestHeaders.Accept.Clear();
+        DecodeLWWSetMsgAndMerge(byteMsg);
+        Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
+        var frontEndLwwSetJson = JsonConvert.SerializeObject(myLWWSetService.Get(1));
+        var requestDatalwwset = new StringContent(frontEndLwwSetJson, Encoding.UTF8, "application/json");
+        var resultLww = await client.PutAsync(
+            "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestDatalwwset);
+
+        // TODO: check this result for errors
+    }
+
+    private static async void ProcessAndDisplayTptpGraphMsg(byte[] byteMsg)
+    {
+        Console.WriteLine("Message received: ", byteMsg);
+
+        //Declare TPTPMsg
+        MergeSharp.TPTPGraphMsg tptpgraphMsg = new MergeSharp.TPTPGraphMsg();
+        tptpgraphMsg.Decode(byteMsg);
+
+        myTPTPGraphService.MergeTPTPGraphs(1, tptpgraphMsg);
+
+        Console.WriteLine("Graphs merged");
+
+        //translate TPTPGraph node guids to a <Guid,int> dictionary
+        //clear existing mapping because state has been updated
+        TranslateGuidstoKeys();
+
+        //translate dictionary values into list of Node objects
+        var nodeDataArray = TranslateKeystoNodes();
+
+        //set uo http client
+        using HttpClient client = new();
+        client.DefaultRequestHeaders.Accept.Clear();
+
+
+        //serialize list of Node objects
+        var serializedNodes = JsonConvert.SerializeObject(nodeDataArray);
+        Console.WriteLine("serialized nodes: " + serializedNodes);
+        var requestData = new StringContent(serializedNodes, Encoding.UTF8, "application/json");
+        //send serilized list of node objects to frontend
+        //TODO: Send updated state to frontend
+        Console.WriteLine("Sending Put Request for front-end");
+        var result = await client.PutAsync(
+            "https://localhost:7009/TPTPGraph/SendTPTPGraphToFrontEnd", requestData);
+        Console.WriteLine(result);
+
+    }
+
     private static void ConfigureServerConnectionOnReceiveEncodeMessage()
     {
         _ = serverConnection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
-            //Console.WriteLine("Message received: ", byteMsg);
-
-            // //Declare TPTPMsg
-            // MergeSharp.TPTPGraphMsg tptpgraphMsg = new MergeSharp.TPTPGraphMsg();
-            // tptpgraphMsg.Decode(byteMsg);
-
-            // myTPTPGraphService.MergeTPTPGraphs(1, tptpgraphMsg);
-
-            // Console.WriteLine("Graphs merged");
-
-            // //translate TPTPGraph node guids to a <Guid,int> dictionary
-            // //clear existing mapping because state has been updated
-            // TranslateGuidstoKeys();
-
-            // //translate dictionary values into list of Node objects
-            // var nodeDataArray = TranslateKeystoNodes();
-
-            // //set uo http client
-            // using HttpClient client = new();
-            // client.DefaultRequestHeaders.Accept.Clear();
-
-
-            // //serialize list of Node objects
-            // var serializedNodes = JsonConvert.SerializeObject(nodeDataArray);
-            // Console.WriteLine("serialized nodes: " + serializedNodes);
-            // var requestData = new StringContent(serializedNodes, Encoding.UTF8, "application/json");
-            // //send serilized list of node objects to frontend
-            // //TODO: Send updated state to frontend
-            // Console.WriteLine("Sending Put Request for front-end");
-            // var result = await client.PutAsync(
-            //     "https://localhost:7009/TPTPGraph/SendTPTPGraphToFrontEnd", requestData);
-            // Console.WriteLine(result);
-            using HttpClient client = new();
-            client.DefaultRequestHeaders.Accept.Clear();
-            DecodeLWWSetMsgAndMerge(byteMsg);
-            Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
-            var frontEndLwwSetJson = JsonConvert.SerializeObject(myLWWSetService.Get(1));
-            var requestDatalwwset = new StringContent(frontEndLwwSetJson, Encoding.UTF8, "application/json");
-            var resultLww = await client.PutAsync(
-                "https://localhost:7009/LWWSet/SendLWWSetToFrontEnd", requestDatalwwset);
-
-            // TODO: check this result for errors
+            // ProcessAndDisplayTptpGraphMsg(byteMsg);
+            ProcessAndDisplayLwwSetMsg(byteMsg);
         });
     }
 
@@ -136,7 +147,7 @@ internal class Program
         {
             Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
             await serverConnection.InvokeAsync("SendServerCurrentState", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode(), newConnectionID);
-            
+
             // TODO: check this result for errors
         });
     }
