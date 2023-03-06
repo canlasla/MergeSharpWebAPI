@@ -35,7 +35,6 @@ public class GraphService
         }
     }
 
-    // TODO: create object for links/edges with from, fromPort, to, and toPort properties.
     public readonly struct EdgeInfo
     {
         [JsonInclude]

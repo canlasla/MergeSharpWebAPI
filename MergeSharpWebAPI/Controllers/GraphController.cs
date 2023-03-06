@@ -47,8 +47,7 @@ public class GraphController : ControllerBase
     {
         try
         {
-            //make call to method in controller
-            return JsonConvert.SerializeObject(myGraphService.Vertices);
+            return JsonConvert.SerializeObject(myGraphService.GetGraphMessage());
         }
         catch
         {
