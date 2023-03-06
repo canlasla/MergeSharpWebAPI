@@ -35,6 +35,58 @@ public class GraphService
         }
     }
 
+    // TODO: create object for links/edges with from, fromPort, to, and toPort properties.
+    public readonly struct EdgeInfo
+    {
+        [JsonInclude]
+        public readonly string from;
+        [JsonInclude]
+        public readonly string fromPort;
+        [JsonInclude]
+        public readonly string to;
+        [JsonInclude]
+        public readonly string toPort;
+
+        public EdgeInfo(int srcKey, string fromPort, int dstKey, string toPort)
+        {
+            this.from = srcKey.ToString();
+            this.fromPort = fromPort;
+            this.to = dstKey.ToString();
+            this.toPort = toPort;
+        }
+    }
+
+    // Json object for the frontend
+    public readonly struct FrontEndGraphMessage
+    {
+        [JsonInclude]
+        public readonly IEnumerable<VertexInfo> vertices;
+        [JsonInclude]
+        public readonly IEnumerable<EdgeInfo> edges;
+
+        public FrontEndGraphMessage(IEnumerable<VertexInfo> vertices, IEnumerable<EdgeInfo> edges)
+        {
+            this.vertices = vertices;
+            this.edges = edges;
+        }
+    }
+
+    public FrontEndGraphMessage GetGraphMessage()
+    {
+        FrontEndGraphMessage message = new(Vertices, Edges);
+        return message;
+    }
+
+    // TODO: Complete method that returns all the edges into an IEnumerable<EdgeInfo>:
+    public IEnumerable<EdgeInfo> Edges => EdgeCounts.Select(
+        (kv) =>
+        {
+            // int key = kv.Key;
+            // Graph.Vertex vertex = kv.Value;
+            // return new VertexInfo(key, vertex.x, vertex.y, vertex.category);
+        }
+    );
+
     public Dictionary<(int, int), int> EdgeCounts => _graph.Edges.ToDictionary(
                                                                 kv => (_vertexGuidToKeyMap[kv.Key.src], _vertexGuidToKeyMap[kv.Key.dst]),
                                                                 kv => kv.Value
