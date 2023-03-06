@@ -38,53 +38,66 @@ public class GraphService
     public readonly struct EdgeInfo
     {
         [JsonInclude]
-        public readonly string from;
+        public readonly int from;
         [JsonInclude]
         public readonly string fromPort;
         [JsonInclude]
-        public readonly string to;
+        public readonly int to;
         [JsonInclude]
         public readonly string toPort;
-
-        public EdgeInfo(int srcKey, string fromPort, int dstKey, string toPort)
+        [JsonInclude]
+        public readonly int key;
+        public EdgeInfo(int srcKey, string fromPort, int dstKey, string toPort, int key)
         {
-            this.from = srcKey.ToString();
+            this.from = srcKey;
             this.fromPort = fromPort;
-            this.to = dstKey.ToString();
+            this.to = dstKey;
             this.toPort = toPort;
+            this.key = key;
         }
     }
 
     // Json object for the frontend
-    public readonly struct FrontEndGraphMessage
+    public readonly struct GraphInfo
     {
         [JsonInclude]
         public readonly IEnumerable<VertexInfo> vertices;
         [JsonInclude]
         public readonly IEnumerable<EdgeInfo> edges;
 
-        public FrontEndGraphMessage(IEnumerable<VertexInfo> vertices, IEnumerable<EdgeInfo> edges)
+        public GraphInfo(IEnumerable<VertexInfo> vertices, IEnumerable<EdgeInfo> edges)
         {
             this.vertices = vertices;
             this.edges = edges;
         }
     }
 
-    public FrontEndGraphMessage GetGraphMessage()
+    public GraphInfo GetGraph()
     {
-        FrontEndGraphMessage message = new(Vertices, Edges);
-        return message;
+        GraphInfo graph = new(Vertices, Edges());
+        return graph;
     }
 
     // TODO: Complete method that returns all the edges into an IEnumerable<EdgeInfo>:
-    public IEnumerable<EdgeInfo> Edges => EdgeCounts.Select(
-        (kv) =>
+    public IEnumerable<EdgeInfo> Edges()
+    {
+        List<EdgeInfo> edges = new();
+        int idx = -1;
+        foreach (KeyValuePair<(int, int), int> kv in EdgeCounts)
         {
-            // int key = kv.Key;
-            // Graph.Vertex vertex = kv.Value;
-            // return new VertexInfo(key, vertex.x, vertex.y, vertex.category);
+            // for kv.value:
+            for (int i = 0; i < kv.Value; i++)
+            {
+                int srcKey = kv.Key.Item1;
+                int dstKey = kv.Key.Item2;
+                string toPort = "in1";
+                int key = idx;
+                edges.Add(new EdgeInfo(srcKey, "out", dstKey, toPort, key));
+                idx--;
+            }
         }
-    );
+        return edges;
+    }
 
     public Dictionary<(int, int), int> EdgeCounts => _graph.Edges.ToDictionary(
                                                                 kv => (_vertexGuidToKeyMap[kv.Key.src], _vertexGuidToKeyMap[kv.Key.dst]),
