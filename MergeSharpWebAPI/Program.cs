@@ -147,6 +147,7 @@ internal class Program
         {
             Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
             await serverConnection.InvokeAsync("SendClientNewState", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode(), newConnectionID);
+            // TODO: change to GraphService instead of LWWSetService
 
             // TODO: check this result for errors
         });
