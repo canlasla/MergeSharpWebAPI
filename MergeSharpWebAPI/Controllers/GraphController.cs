@@ -34,20 +34,20 @@ public class GraphController : ControllerBase
     public async Task<ActionResult> SendMessage()
     {
         // set graphDataMessage by calling method in service
-        var graphDataMessage = myGraphService.GetGraphMessage();
+        var graph = myGraphService.GetGraph();
         // TODO: change the message to JSON for frontend
-        await _hubContext.Clients.All.ReceiveMessage(graphDataMessage);
+        await _hubContext.Clients.All.ReceiveMessage(graph);
         return NoContent();
     }
 
     // TODO: complete endpoint for frontend to query graph data
     // needs to create object that contains vertex info array and edge info array
-    [HttpGet("graphdata")]
-    public ActionResult<string> GetGraphData()
+    [HttpGet("")]
+    public ActionResult<string> Graph()
     {
         try
         {
-            return JsonConvert.SerializeObject(myGraphService.GetGraphMessage());
+            return JsonConvert.SerializeObject(myGraphService.GetGraph());
         }
         catch
         {
