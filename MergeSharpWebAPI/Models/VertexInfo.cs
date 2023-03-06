@@ -13,19 +13,19 @@ public class VertexInfoMsg : PropagationMessage
     public LWWRegisterMsg<int> yMsg { get; private set; }
 
     [JsonInclude]
-    public Graph.Vertex.Type type { get; private set; }
+    public Graph.Vertex.Category category { get; private set; }
     public VertexInfoMsg()
     {
         xMsg = new();
         yMsg = new();
-        type = Graph.Vertex.Type.Invalid;
+        category = Graph.Vertex.Category.Invalid;
     }
 
-    public VertexInfoMsg(LWWRegister<int> x, LWWRegister<int> y, Graph.Vertex.Type type)
+    public VertexInfoMsg(LWWRegister<int> x, LWWRegister<int> y, Graph.Vertex.Category category)
     {
         xMsg = (LWWRegisterMsg<int>) x.GetLastSynchronizedUpdate();
         yMsg = (LWWRegisterMsg<int>) y.GetLastSynchronizedUpdate();
-        this.type = type;
+        this.category = category;
     }
 
     public override void Decode(byte[] input)
@@ -38,7 +38,7 @@ public class VertexInfoMsg : PropagationMessage
 
         this.xMsg = json.xMsg;
         this.yMsg = json.yMsg;
-        this.type = json.type;
+        this.category = json.category;
     }
     public override byte[] Encode()
     {
@@ -50,22 +50,22 @@ public class VertexInfo : CRDT
 {
     private readonly LWWRegister<int> _x;
     private readonly LWWRegister<int> _y;
-
     public int X => _x.Value;
     public int Y => _y.Value;
-    public Graph.Vertex.Type Type { get; private set; }
+    public Graph.Vertex.Category Category { get; private set; }
 
-    public VertexInfo() {
+    public VertexInfo()
+    {
         _x = new();
         _y = new();
-        Type = Graph.Vertex.Type.Invalid;
-     }
+        Category = Graph.Vertex.Category.Invalid;
+    }
 
-    public VertexInfo(int x, int y, Graph.Vertex.Type type)
+    public VertexInfo(int x, int y, Graph.Vertex.Category category)
     {
         _x = new(x);
         _y = new(y);
-        Type = type;
+        Category = category;
     }
 
     public override void ApplySynchronizedUpdate(PropagationMessage receivedUpdate)
@@ -79,9 +79,9 @@ public class VertexInfo : CRDT
         _x.ApplySynchronizedUpdate(received.xMsg);
         _y.ApplySynchronizedUpdate(received.yMsg);
 
-        // this should only occur if this.Type == Graph.Vertex.Type.Invalid
-        // NOTE: Graph.Vertex.Type.Invalid is the smallest enum
-        Type = Type > received.type ? Type : received.type;
+        // this should only occur if this.Category == Graph.Vertex.Category.Invalid
+        // NOTE: Graph.Vertex.Category.Invalid is the smallest enum
+        Category = Category > received.category ? Category : received.category;
     }
     public override PropagationMessage DecodePropagationMessage(byte[] input)
     {
@@ -90,5 +90,5 @@ public class VertexInfo : CRDT
         return msg;
     }
 
-    public override PropagationMessage GetLastSynchronizedUpdate() => new VertexInfoMsg(this._x, this._y, this.Type);
+    public override PropagationMessage GetLastSynchronizedUpdate() => new VertexInfoMsg(this._x, this._y, this.Category);
 }

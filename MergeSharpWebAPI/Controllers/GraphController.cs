@@ -36,7 +36,7 @@ public class GraphController : ControllerBase
     }
 
     [HttpPost("vertices")]
-    public async Task<IActionResult> AddVertex([BindRequired, FromQuery] int key, [BindRequired, FromQuery] string loc, [BindRequired, FromQuery] string type)
+    public async Task<IActionResult> AddVertex([BindRequired, FromQuery] int key, [BindRequired, FromQuery] string loc, [BindRequired, FromQuery] string category)
     {
         if (!ModelState.IsValid)
         {
@@ -50,9 +50,9 @@ public class GraphController : ControllerBase
             return BadRequest();
         }
 
-        if (myGraphService.AddVertex(key, x, y, type))
+        if (myGraphService.AddVertex(key, x, y, category))
         {
-            Console.WriteLine($"Added Vertex {key} ({loc}) {type} locally");
+            Console.WriteLine($"Added Vertex {key} ({loc}) {category} locally");
 
             if (serverConnection.State == HubConnectionState.Connected)
             {

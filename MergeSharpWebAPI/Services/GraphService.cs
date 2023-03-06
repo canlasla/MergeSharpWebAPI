@@ -21,17 +21,17 @@ public class GraphService
     public readonly struct VertexInfo
     {
         [JsonInclude]
+        public readonly string category;
+        [JsonInclude]
         public readonly int key;
         [JsonInclude]
         public readonly string loc;
-        [JsonInclude]
-        public readonly string type;
 
-        public VertexInfo(int key, int x, int y, Graph.Vertex.Type type)
+        public VertexInfo(int key, int x, int y, Graph.Vertex.Category category)
         {
             this.key = key;
             this.loc = $"{x} {y}";
-            this.type = type.ToString().ToLower();
+            this.category = category.ToString().ToLower();
         }
     }
 
@@ -56,34 +56,34 @@ public class GraphService
         {
             int key = kv.Key;
             Graph.Vertex vertex = kv.Value;
-            return new VertexInfo(key, vertex.x, vertex.y, vertex.type);
+            return new VertexInfo(key, vertex.x, vertex.y, vertex.category);
         }
     );
     public VertexInfo Vertex(int key)
     {
         if (_keyToVertexMap.TryGetValue(key, out Graph.Vertex v))
         {
-            return new VertexInfo(key, v.x, v.y, v.type);
+            return new VertexInfo(key, v.x, v.y, v.category);
         }
 
         throw new KeyNotFoundException();
     }
 
-    public bool AddVertex(int key, int x, int y, string stype)
+    public bool AddVertex(int key, int x, int y, string scategory)
     {
         if (_keyToVertexMap.ContainsKey(key))
         {
             return false;
         }
 
-        if (Enum.TryParse(stype, true, out Graph.Vertex.Type type))
+        if (Enum.TryParse(scategory, true, out Graph.Vertex.Category category))
         {
             int retries = 3; // arbitrary amount of retries
 
             while (retries > 0)
             {
                 Guid vertexGuid = Guid.NewGuid();
-                var v = new Graph.Vertex(vertexGuid, x, y, type);
+                var v = new Graph.Vertex(vertexGuid, x, y, category);
 
                 if (_graph.AddVertex(v)) // fails if vertexGuid is non-unique (very small probability)
                 {
