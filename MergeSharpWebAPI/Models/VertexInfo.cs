@@ -7,10 +7,10 @@ namespace MergeSharpWebAPI.Models;
 public class VertexInfoMsg : PropagationMessage
 {
     [JsonInclude]
-    public LWWRegisterMsg<double> xMsg { get; private set; }
+    public LWWRegisterMsg<int> xMsg { get; private set; }
 
     [JsonInclude]
-    public LWWRegisterMsg<double> yMsg { get; private set; }
+    public LWWRegisterMsg<int> yMsg { get; private set; }
 
     [JsonInclude]
     public Graph.Vertex.Type type { get; private set; }
@@ -21,10 +21,10 @@ public class VertexInfoMsg : PropagationMessage
         type = Graph.Vertex.Type.Invalid;
     }
 
-    public VertexInfoMsg(LWWRegister<double> x, LWWRegister<double> y, Graph.Vertex.Type type)
+    public VertexInfoMsg(LWWRegister<int> x, LWWRegister<int> y, Graph.Vertex.Type type)
     {
-        xMsg = (LWWRegisterMsg<double>) x.GetLastSynchronizedUpdate();
-        yMsg = (LWWRegisterMsg<double>) y.GetLastSynchronizedUpdate();
+        xMsg = (LWWRegisterMsg<int>) x.GetLastSynchronizedUpdate();
+        yMsg = (LWWRegisterMsg<int>) y.GetLastSynchronizedUpdate();
         this.type = type;
     }
 
@@ -48,8 +48,8 @@ public class VertexInfoMsg : PropagationMessage
 
 public class VertexInfo : CRDT
 {
-    private readonly LWWRegister<double> _x;
-    private readonly LWWRegister<double> _y;
+    private readonly LWWRegister<int> _x;
+    private readonly LWWRegister<int> _y;
     private Graph.Vertex.Type _type;
 
     public VertexInfo() {
@@ -58,7 +58,7 @@ public class VertexInfo : CRDT
         _type = Graph.Vertex.Type.Invalid;
      }
 
-    public VertexInfo(double x, double y, Graph.Vertex.Type type)
+    public VertexInfo(int x, int y, Graph.Vertex.Type type)
     {
         _x = new(x);
         _y = new(y);
