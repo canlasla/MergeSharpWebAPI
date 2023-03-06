@@ -146,7 +146,7 @@ internal class Program
         _ = serverConnection.On<string>("SendMessageToNewConnection", async newConnectionID =>
         {
             Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
-            await serverConnection.InvokeAsync("SendServerCurrentState", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode(), newConnectionID);
+            await serverConnection.InvokeAsync("SendClientNewState", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode(), newConnectionID);
 
             // TODO: check this result for errors
         });
@@ -159,7 +159,7 @@ internal class Program
             {
                 await serverConnection.StartAsync();
                 Console.WriteLine("Connection started");
-                await serverConnection.InvokeAsync("ReceiveFreshState", serverConnection.ConnectionId);
+                await serverConnection.InvokeAsync("RequestStateFromServer", serverConnection.ConnectionId);
                 await serverConnection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
             }
             catch (Exception ex)
