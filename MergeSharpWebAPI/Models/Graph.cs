@@ -170,8 +170,10 @@ public class Graph : CRDT
         _canilleraGraph.ApplySynchronizedUpdate(received.cGraphMsg);
 
         // _vertexInfo should contain only the vertices now in the graph
-        var currVerticesFuids = LookupVertexGuids();
-        _vertexInfo = _vertexInfo.Where(kv => currVerticesFuids.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
+        var currVerticesGuids = LookupVertexGuids();
+
+        _vertexInfo = _vertexInfo.Where(kv => currVerticesGuids.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
+
 
         foreach (var kv in received.vertexInfoMsgs)
         {
