@@ -32,6 +32,7 @@ public class GraphController : ControllerBase
     public async Task<ActionResult> SendMessage()
     {
         var graph = myGraphService.GetGraph();
+        Console.WriteLine(JsonConvert.SerializeObject(graph));
         await _hubContext.Clients.All.ReceiveMessage(graph);
         return NoContent();
     }

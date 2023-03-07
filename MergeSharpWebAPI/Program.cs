@@ -65,6 +65,7 @@ internal class Program
                 // want to stagger the SendEncodedMessage call. If SendEncodedMessage sent at same time,
                 // one of them will get lost
                 await Task.Delay(new Random().Next(0, 5) * 1000);
+                await serverConnection.InvokeAsync("RequestStateFromServer", serverConnection.ConnectionId);
                 await serverConnection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
             }
         };
