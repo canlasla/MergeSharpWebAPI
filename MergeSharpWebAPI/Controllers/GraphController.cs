@@ -101,6 +101,39 @@ public class GraphController : ControllerBase
         }
     }
 
+    [HttpPut("vertices")]
+    public async Task<IActionResult> ModifyVertex([BindRequired, FromQuery] int key, [BindRequired, FromQuery] string loc)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest();
+        }
+
+        string[] position = loc.Split();
+
+        if (position.Length != 2 || !int.TryParse(position[0], out int x) || !int.TryParse(position[1], out int y))
+        {
+            return BadRequest();
+        }
+
+        if (myGraphService.ModifyVertex(key, x, y))
+        {
+            Console.WriteLine($"Modified Vertex {key} ({loc}) locally");
+
+            if (serverConnection.State == HubConnectionState.Connected)
+            {
+                await serverConnection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
+                Console.WriteLine("Raised SendEncodedMessage event with new state on server to propagate to other clients");
+            }
+
+            return Ok();
+        }
+        else
+        {
+            return Conflict();
+        }
+    }
+
     [HttpDelete("vertices")]
     public async Task<IActionResult> RemoveVertex([BindRequired, FromQuery] int key)
     {
