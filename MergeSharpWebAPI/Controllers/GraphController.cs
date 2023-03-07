@@ -28,20 +28,14 @@ public class GraphController : ControllerBase
         _hubContext = hubContext;
     }
 
-    // TODO: complete endpoint for backend to send graph data to frontend 
-    // needs object argument that contains vertex info array and edge info array
     [HttpPut("SendGraphToFrontEnd")]
     public async Task<ActionResult> SendMessage()
     {
-        // set graphDataMessage by calling method in service
         var graph = myGraphService.GetGraph();
-        // TODO: change the message to JSON for frontend
         await _hubContext.Clients.All.ReceiveMessage(graph);
         return NoContent();
     }
 
-    // TODO: complete endpoint for frontend to query graph data
-    // needs to create object that contains vertex info array and edge info array
     [HttpGet("")]
     public ActionResult<string> Graph()
     {
