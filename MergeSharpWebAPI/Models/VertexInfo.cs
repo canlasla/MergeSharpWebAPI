@@ -51,15 +51,26 @@ public class VertexInfo : CRDT
     private readonly LWWRegister<int> _x;
     private readonly LWWRegister<int> _y;
 
-    public int X => _x.Value;
-    public int Y => _y.Value;
+    public int X
+    {
+        get => _x.Value;
+        set => _x.Value = value;
+    }
+
+    public int Y
+    {
+        get => _y.Value;
+        set => _y.Value = value;
+    }
+
     public Graph.Vertex.Type Type { get; private set; }
 
-    public VertexInfo() {
+    public VertexInfo()
+    {
         _x = new();
         _y = new();
         Type = Graph.Vertex.Type.Invalid;
-     }
+    }
 
     public VertexInfo(int x, int y, Graph.Vertex.Type type)
     {

@@ -99,6 +99,16 @@ public class GraphService
         return false;
     }
 
+    public bool ModifyVertex(int key, int x, int y)
+    {
+        if (_keyToVertexMap.TryGetValue(key, out Graph.Vertex vertex))
+        {
+            return _graph.UpdateVertex(vertex, x, y);
+        }
+
+        return false;
+    }
+
     public bool RemoveVertex(int key)
     {
         if (_keyToVertexMap.TryGetValue(key, out Graph.Vertex v)
