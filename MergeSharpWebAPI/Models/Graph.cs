@@ -83,7 +83,9 @@ public class Graph : CRDT
     private readonly CanilleraGraph _canilleraGraph;
     private Dictionary<Guid, VertexInfo> _vertexInfo;
 
-    public IEnumerable<Guid> Vertices => LookupVertices();
+    public IEnumerable<Guid> VertexGuids => LookupVertexGuids();
+
+    public IEnumerable<Vertex> Vertices => LookupVertices();
 
     public Dictionary<Edge, int> Edges => EdgeCounts();
 
@@ -98,7 +100,7 @@ public class Graph : CRDT
     [OperationType(OpType.Update)]
     public virtual bool AddVertex(Vertex v)
     {
-        if (LookupVertices().Contains(v.guid))
+        if (LookupVertexGuids().Contains(v.guid))
         {
             return false;
         }
@@ -132,9 +134,19 @@ public class Graph : CRDT
         return _canilleraGraph.RemoveEdge(new CanilleraGraph.Edge(e.src, e.dst));
     }
 
-    private IEnumerable<Guid> LookupVertices()
+    private IEnumerable<Guid> LookupVertexGuids()
     {
         return _canilleraGraph.LookupVertices();
+    }
+
+    private IEnumerable<Vertex> LookupVertices()
+    {
+        List<Vertex> vertices = new();
+        foreach ((Guid guid, VertexInfo vertexInfo) in _vertexInfo)
+        {
+            vertices.Add(new Vertex(guid, vertexInfo.X, vertexInfo.Y, vertexInfo.Type));
+        }
+        return vertices;
     }
 
     private Dictionary<Edge, int> EdgeCounts()
@@ -158,8 +170,10 @@ public class Graph : CRDT
         _canilleraGraph.ApplySynchronizedUpdate(received.cGraphMsg);
 
         // _vertexInfo should contain only the vertices now in the graph
-        var currVertices = LookupVertices();
-        _vertexInfo = _vertexInfo.Where(kv => currVertices.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
+        var currVerticesGuids = LookupVertexGuids();
+
+        _vertexInfo = _vertexInfo.Where(kv => currVerticesGuids.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
+
 
         foreach (var kv in received.vertexInfoMsgs)
         {
