@@ -35,6 +35,7 @@ public class GraphService
         }
     }
 
+
     public readonly struct EdgeInfo
     {
         [JsonInclude]
