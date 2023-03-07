@@ -174,7 +174,6 @@ public class Graph : CRDT
 
         _vertexInfo = _vertexInfo.Where(kv => currVerticesGuids.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
 
-
         foreach (var kv in received.vertexInfoMsgs)
         {
             if (_vertexInfo.TryGetValue(kv.Key, out VertexInfo? vInfo))
@@ -183,8 +182,8 @@ public class Graph : CRDT
             }
             else
             {
-                vInfo = new();
-                vInfo.ApplySynchronizedUpdate(kv.Value);
+                _vertexInfo[kv.Key] = new();
+                _vertexInfo[kv.Key].ApplySynchronizedUpdate(kv.Value);
             }
         }
     }

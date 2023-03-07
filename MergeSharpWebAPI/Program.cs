@@ -136,6 +136,8 @@ internal class Program
     {
         _ = serverConnection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
+            Console.WriteLine("New state received!");
+
             //Merge Graphs using applysynchronizedupdate from graphservice
             myGraphService.ApplySynchronizedUpdate(byteMsg);
             
