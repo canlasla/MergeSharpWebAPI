@@ -21,18 +21,83 @@ public class GraphService
     public readonly struct VertexInfo
     {
         [JsonInclude]
+        public readonly string category;
+        [JsonInclude]
         public readonly int key;
         [JsonInclude]
         public readonly string loc;
-        [JsonInclude]
-        public readonly string type;
 
-        public VertexInfo(int key, int x, int y, Graph.Vertex.Type type)
+        public VertexInfo(int key, int x, int y, Graph.Vertex.Category category)
         {
             this.key = key;
             this.loc = $"{x} {y}";
-            this.type = type.ToString().ToLower();
+            this.category = category.ToString().ToLower();
         }
+    }
+
+
+    public readonly struct EdgeInfo
+    {
+        [JsonInclude]
+        public readonly int from;
+        [JsonInclude]
+        public readonly string fromPort;
+        [JsonInclude]
+        public readonly int to;
+        [JsonInclude]
+        public readonly string toPort;
+        [JsonInclude]
+        public readonly int key;
+        public EdgeInfo(int srcKey, string fromPort, int dstKey, string toPort, int key)
+        {
+            this.from = srcKey;
+            this.fromPort = fromPort;
+            this.to = dstKey;
+            this.toPort = toPort;
+            this.key = key;
+        }
+    }
+
+    // Json object for the frontend
+    public readonly struct GraphInfo
+    {
+        [JsonInclude]
+        public readonly IEnumerable<VertexInfo> vertices;
+        [JsonInclude]
+        public readonly IEnumerable<EdgeInfo> edges;
+
+        public GraphInfo(IEnumerable<VertexInfo> vertices, IEnumerable<EdgeInfo> edges)
+        {
+            this.vertices = vertices;
+            this.edges = edges;
+        }
+    }
+
+    public GraphInfo GetGraph()
+    {
+        GraphInfo graph = new(Vertices, Edges());
+        return graph;
+    }
+
+    // TODO: Complete method that returns all the edges into an IEnumerable<EdgeInfo>:
+    public IEnumerable<EdgeInfo> Edges()
+    {
+        List<EdgeInfo> edges = new();
+        int idx = -1;
+        foreach (KeyValuePair<(int, int), int> kv in EdgeCounts)
+        {
+            // for kv.value:
+            for (int i = 0; i < kv.Value; i++)
+            {
+                int srcKey = kv.Key.Item1;
+                int dstKey = kv.Key.Item2;
+                string toPort = "in1";
+                int key = idx;
+                edges.Add(new EdgeInfo(srcKey, "out", dstKey, toPort, key));
+                idx--;
+            }
+        }
+        return edges;
     }
 
     public Dictionary<(int, int), int> EdgeCounts => _graph.Edges.ToDictionary(
@@ -56,34 +121,34 @@ public class GraphService
         {
             int key = kv.Key;
             Graph.Vertex vertex = kv.Value;
-            return new VertexInfo(key, vertex.x, vertex.y, vertex.type);
+            return new VertexInfo(key, vertex.x, vertex.y, vertex.category);
         }
     );
     public VertexInfo Vertex(int key)
     {
         if (_keyToVertexMap.TryGetValue(key, out Graph.Vertex v))
         {
-            return new VertexInfo(key, v.x, v.y, v.type);
+            return new VertexInfo(key, v.x, v.y, v.category);
         }
 
         throw new KeyNotFoundException();
     }
 
-    public bool AddVertex(int key, int x, int y, string stype)
+    public bool AddVertex(int key, int x, int y, string scategory)
     {
         if (_keyToVertexMap.ContainsKey(key))
         {
             return false;
         }
 
-        if (Enum.TryParse(stype, true, out Graph.Vertex.Type type))
+        if (Enum.TryParse(scategory, true, out Graph.Vertex.Category category))
         {
             int retries = 3; // arbitrary amount of retries
 
             while (retries > 0)
             {
                 Guid vertexGuid = Guid.NewGuid();
-                var v = new Graph.Vertex(vertexGuid, x, y, type);
+                var v = new Graph.Vertex(vertexGuid, x, y, category);
 
                 if (_graph.AddVertex(v)) // fails if vertexGuid is non-unique (very small probability)
                 {

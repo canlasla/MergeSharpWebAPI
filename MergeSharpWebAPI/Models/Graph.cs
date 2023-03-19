@@ -61,7 +61,7 @@ public class Graph : CRDT
 
     public struct Vertex
     {
-        public enum Type
+        public enum Category
         {
             Invalid, And, Or, Xor, Not, Nand, Nor, XNor, Input, Output
         }
@@ -69,14 +69,14 @@ public class Graph : CRDT
         public readonly Guid guid { get; }
         public int x { get; set; }
         public int y { get; set; }
-        public readonly Type type { get; }
+        public readonly Category category { get; }
 
-        public Vertex(Guid guid, int x, int y, Type type)
+        public Vertex(Guid guid, int x, int y, Category category)
         {
             this.guid = guid;
             this.x = x;
             this.y = y;
-            this.type = type;
+            this.category = category;
         }
     }
 
@@ -106,7 +106,7 @@ public class Graph : CRDT
         }
 
         _canilleraGraph.AddVertex(v.guid);
-        _vertexInfo[v.guid] = new VertexInfo(v.x, v.y, v.type);
+        _vertexInfo[v.guid] = new VertexInfo(v.x, v.y, v.category);
         return true;
     }
 
@@ -144,7 +144,7 @@ public class Graph : CRDT
         List<Vertex> vertices = new();
         foreach ((Guid guid, VertexInfo vertexInfo) in _vertexInfo)
         {
-            vertices.Add(new Vertex(guid, vertexInfo.X, vertexInfo.Y, vertexInfo.Type));
+            vertices.Add(new Vertex(guid, vertexInfo.X, vertexInfo.Y, vertexInfo.Category));
         }
         return vertices;
     }
@@ -174,7 +174,6 @@ public class Graph : CRDT
 
         _vertexInfo = _vertexInfo.Where(kv => currVerticesGuids.Contains(kv.Key)).ToDictionary(kv => kv.Key, kv => kv.Value);
 
-
         foreach (var kv in received.vertexInfoMsgs)
         {
             if (_vertexInfo.TryGetValue(kv.Key, out VertexInfo? vInfo))
@@ -183,8 +182,8 @@ public class Graph : CRDT
             }
             else
             {
-                vInfo = new();
-                vInfo.ApplySynchronizedUpdate(kv.Value);
+                _vertexInfo[kv.Key] = new();
+                _vertexInfo[kv.Key].ApplySynchronizedUpdate(kv.Value);
             }
         }
     }
