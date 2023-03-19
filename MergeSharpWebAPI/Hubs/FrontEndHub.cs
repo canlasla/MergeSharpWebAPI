@@ -10,15 +10,4 @@ public static class UserHandler
 
 public class FrontEndHub : Hub<IFrontEndClient>
 {
-    public override Task OnConnectedAsync()
-    {
-        // _ = UserHandler.ConnectedIds.Add(Context.ConnectionId);
-        return base.OnConnectedAsync();
-    }
-
-    public override Task OnDisconnectedAsync(Exception? exception)
-    {
-        // _ = UserHandler.ConnectedIds.Remove(Context.ConnectionId);
-        return base.OnDisconnectedAsync(exception);
-    }
 }
