@@ -5,6 +5,9 @@ using static MergeSharpWebAPI.ServerConnection.Globals;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
+using Microsoft.AspNetCore.SignalR;
+using MergeSharpWebAPI.Hubs.Clients;
+
 namespace MergeSharpWebAPI.Controllers;
 
 
@@ -17,6 +20,36 @@ namespace MergeSharpWebAPI.Controllers;
 [Route("graph")]
 public class GraphController : ControllerBase
 {
+
+    private readonly IHubContext<FrontEndHub, IFrontEndClient> _hubContext;
+
+    public GraphController(IHubContext<FrontEndHub, IFrontEndClient> hubContext)
+    {
+        _hubContext = hubContext;
+    }
+
+    [HttpPut("SendGraphToFrontEnd")]
+    public async Task<ActionResult> SendMessage()
+    {
+        var graph = myGraphService.GetGraph();
+        Console.WriteLine(JsonConvert.SerializeObject(graph));
+        await _hubContext.Clients.All.ReceiveMessage(graph);
+        return NoContent();
+    }
+
+    [HttpGet("")]
+    public ActionResult<string> Graph()
+    {
+        try
+        {
+            return JsonConvert.SerializeObject(myGraphService.GetGraph());
+        }
+        catch
+        {
+            return NotFound();
+        }
+    }
+
     [HttpGet("vertices")]
     public ActionResult<string> Vertices([FromQuery] int? key = null)
     {
@@ -36,7 +69,7 @@ public class GraphController : ControllerBase
     }
 
     [HttpPost("vertices")]
-    public async Task<IActionResult> AddVertex([BindRequired, FromQuery] int key, [BindRequired, FromQuery] string loc, [BindRequired, FromQuery] string type)
+    public async Task<IActionResult> AddVertex([BindRequired, FromQuery] int key, [BindRequired, FromQuery] string loc, [BindRequired, FromQuery] string category)
     {
         if (!ModelState.IsValid)
         {
@@ -50,9 +83,9 @@ public class GraphController : ControllerBase
             return BadRequest();
         }
 
-        if (myGraphService.AddVertex(key, x, y, type))
+        if (myGraphService.AddVertex(key, x, y, category))
         {
-            Console.WriteLine($"Added Vertex {key} ({loc}) {type} locally");
+            Console.WriteLine($"Added Vertex {key} ({loc}) {category} locally");
 
             if (serverConnection.State == HubConnectionState.Connected)
             {

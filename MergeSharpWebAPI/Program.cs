@@ -65,7 +65,8 @@ internal class Program
                 // want to stagger the SendEncodedMessage call. If SendEncodedMessage sent at same time,
                 // one of them will get lost
                 await Task.Delay(new Random().Next(0, 5) * 1000);
-                await serverConnection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+                await serverConnection.InvokeAsync("RequestStateFromServer", serverConnection.ConnectionId);
+                await serverConnection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
             }
         };
     }
@@ -136,8 +137,22 @@ internal class Program
     {
         _ = serverConnection.On<byte[]>("ReceiveEncodedMessage", async byteMsg =>
         {
+            Console.WriteLine("New state received!");
+
+            //Merge Graphs using applysynchronizedupdate from graphservice
+            myGraphService.ApplySynchronizedUpdate(byteMsg);
+            
+            //set up http client
+            using HttpClient client = new();
+            client.DefaultRequestHeaders.Accept.Clear();
+
+            Console.WriteLine("Sending Put Request for front-end");
+            var result = await client.PutAsync(
+                "https://localhost:7009/Graph/SendGraphToFrontEnd", null);
+            Console.WriteLine(result);
+
             // ProcessAndDisplayTptpGraphMsg(byteMsg);
-            ProcessAndDisplayLwwSetMsg(byteMsg);
+            // ProcessAndDisplayLwwSetMsg(byteMsg);
         });
     }
 
@@ -145,9 +160,8 @@ internal class Program
     {
         _ = serverConnection.On<string>("SendMessageToNewConnection", async newConnectionID =>
         {
-            Console.WriteLine(JsonConvert.SerializeObject(myLWWSetService.Get(1)));
-            await serverConnection.InvokeAsync("SendClientNewState", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode(), newConnectionID);
-            // TODO: change to GraphService instead of LWWSetService
+            Console.WriteLine(JsonConvert.SerializeObject(myGraphService.GetGraph()));
+            await serverConnection.InvokeAsync("SendClientNewState", myGraphService.GetLastSynchronizedUpdate(), newConnectionID);
 
             // TODO: check this result for errors
         });
@@ -161,7 +175,7 @@ internal class Program
                 await serverConnection.StartAsync();
                 Console.WriteLine("Connection started");
                 await serverConnection.InvokeAsync("RequestStateFromServer", serverConnection.ConnectionId);
-                await serverConnection.InvokeAsync("SendEncodedMessage", myLWWSetService.Get(1).LwwSet.GetLastSynchronizedUpdate().Encode());
+                await serverConnection.InvokeAsync("SendEncodedMessage", myGraphService.GetLastSynchronizedUpdate());
             }
             catch (Exception ex)
             {
