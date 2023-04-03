@@ -168,7 +168,14 @@ public class GraphService
     {
         if (_keyToVertexMap.TryGetValue(key, out Graph.Vertex vertex))
         {
-            return _graph.UpdateVertex(vertex, x, y);
+            if (_graph.UpdateVertex(vertex, x, y))
+            {
+                vertex.x = x;
+                vertex.y = y;
+                _keyToVertexMap[key] = vertex;
+                return true;
+            }
+            return false;
         }
 
         return false;
