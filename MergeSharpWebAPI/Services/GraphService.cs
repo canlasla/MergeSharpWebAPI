@@ -164,6 +164,23 @@ public class GraphService
         return false;
     }
 
+    public bool ModifyVertex(int key, int x, int y)
+    {
+        if (_keyToVertexMap.TryGetValue(key, out Graph.Vertex vertex))
+        {
+            if (_graph.UpdateVertex(vertex, x, y))
+            {
+                vertex.x = x;
+                vertex.y = y;
+                _keyToVertexMap[key] = vertex;
+                return true;
+            }
+            return false;
+        }
+
+        return false;
+    }
+
     public bool RemoveVertex(int key)
     {
         if (_keyToVertexMap.TryGetValue(key, out Graph.Vertex v)

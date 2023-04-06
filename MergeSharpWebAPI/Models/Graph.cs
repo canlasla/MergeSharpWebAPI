@@ -111,6 +111,19 @@ public class Graph : CRDT
     }
 
     [OperationType(OpType.Update)]
+    public virtual bool UpdateVertex(Vertex v, int x, int y)
+    {
+        if (!LookupVertexGuids().Contains(v.guid))
+        {
+            return false;
+        }
+
+        _vertexInfo[v.guid].X = x;
+        _vertexInfo[v.guid].Y = y;
+        return true;
+    }
+
+    [OperationType(OpType.Update)]
     public virtual bool RemoveVertex(Vertex v)
     {
         if (_canilleraGraph.RemoveVertex(v.guid))
